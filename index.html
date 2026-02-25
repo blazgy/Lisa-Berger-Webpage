@@ -4,7 +4,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Praxis für Psychotherapie | Lisa Berger</title>
+    <title>Praxis für Psychotherapie Vöcklabruck | Lisa Berger</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Praxis für Psychotherapie | Einfühlsame Unterstützung bei Krisen und psychischen Herausforderungen | Depression • Angst • Burn-Out • Essstörungen u.a. | Queer‑aware.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.psychotherapieberger.at/">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-16x16.png">
+    <link rel="manifest" href="favicons/site.webmanifest">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.psychotherapieberger.at/">
+    <meta property="og:title" content="Praxis für Psychotherapie Vöcklabruck | Lisa Berger">
+    <meta property="og:description"
+        content="Praxis für Psychotherapie | Einfühlsame Unterstützung bei Krisen und psychischen Herausforderungen | Depression • Angst • Burn-Out • Essstörungen u.a. | Queer‑aware.">
+    <meta property="og:image" content="https://www.psychotherapieberger.at/Lisa-Photo-2.avif">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.psychotherapieberger.at/">
+    <meta property="twitter:title" content="Praxis für Psychotherapie Vöcklabruck | Lisa Berger">
+    <meta property="twitter:description"
+        content="Personzentrierte Psychotherapie für Jugendliche und Erwachsene in Vöcklabruck. Raum für innere Entfaltung und Entwicklung.">
+    <meta property="twitter:image" content="https://www.psychotherapieberger.at/Lisa-Photo-2.avif">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalBusiness",
+      "name": "Praxis für Psychotherapie | Lisa Berger",
+      "image": "https://www.psychotherapieberger.at/Lisa-Photo-1.avif",
+      "@id": "https://www.psychotherapieberger.at/",
+      "url": "https://www.psychotherapieberger.at/",
+      "telephone": "+43 677 631 426 87",
+      "email": "info@psychotherapieberger.at",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Stadtplatz 36/25",
+        "addressLocality": "Vöcklabruck",
+        "postalCode": "4840",
+        "addressCountry": "AT"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 48.0084,
+        "longitude": 13.6559
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "medicalSpecialty": "Psychiatric",
+      "acceptsReservations": "true",
+      "priceRange": "80€"
+    }
+    </script>
 
     <!-- CSS Frameworks & Custom Styles -->
     <link rel="stylesheet" href="styles.css">
@@ -29,33 +98,18 @@
                 </a>
 
                 <!-- Desktop Links -->
-                <div class="nav-links hidden-md u-flex gap-lg" data-align="center">
-                    <a href="#willkommen" class="nav-link">Willkommen</a>
-                    <a href="#informationen" class="nav-link">Informationen</a>
-                    <a href="#ueber-mich" class="nav-link">Über
-                        mich</a>
-                    <a href="#kontakt" class="nav-link">Kontakt</a>
+                <div class="u-flex gap-lg" data-align="center">
+                    <div class="nav-links hidden-md u-flex gap-lg" data-align="center">
+                        <a href="#willkommen" class="nav-link">Willkommen</a>
+                        <a href="#informationen" class="nav-link">Informationen</a>
+                        <a href="#ueber-mich" class="nav-link">Über mich</a>
+                        <a href="#kontakt" class="nav-link">Kontakt</a>
+                    </div>
 
                     <a href="#kontakt"
                         class="button-small u-text-style-small u-weight-medium transition-transform shadow-md hover-scale">
                         Termin vereinbaren
                     </a>
-                </div>
-                <!-- Mobile Toggle (Hidden on Desktop) -->
-                <button class="menu-toggle visible-md z-50 text-dark-text cursor-pointer" aria-label="Menu"
-                    id="mobile-menu-btn">
-                    <i data-lucide="menu"></i>
-                </button>
-            </div>
-
-            <!-- Mobile Menu (Hidden by default) -->
-            <div class="mobile-menu glass-panel z-40 transition-opacity hidden-default" id="mobile-menu">
-                <div class="u-flex u-padding-block-5 text-center full-height-gap-lg" data-direction="vertical"
-                    data-align="center" data-justify="center">
-                    <a href="#willkommen" class="u-text-style-h3 text-dark-text mobile-nav-link">Willkommen</a>
-                    <a href="#informationen" class="u-text-style-h3 text-dark-text mobile-nav-link">Informationen</a>
-                    <a href="#ueber-mich" class="u-text-style-h3 text-dark-text mobile-nav-link">Über mich</a>
-                    <a href="#kontakt" class="u-text-style-h3 text-dark-text mobile-nav-link">Kontakt</a>
                 </div>
             </div>
         </nav>
@@ -74,20 +128,23 @@
                         <div class="hero-content animate-slide-up hero-order-2">
                             <div class="badge glass-panel inline-flex items-center u-padding-inline-2 badge-pill">
                                 <span
-                                    class="u-text-style-small u-weight-bold tracking-wider text-gray-700 text-xs">WILLKOMMEN</span>
+                                    class="u-text-style-small u-weight-bold tracking-wider text-gray-700 text-xs">PRAXIS
+                                    FÜR PSYCHOTHERAPIE</span>
                             </div>
 
                             <h1 class="u-text-style-h1 text-dark-text leading-tight mb-6">
-                                Raum für innere<br>Entfaltung.
+                                Lisa Berger, MA
                             </h1>
+                            <h2 class="sr-only" aria-hidden="true"
+                                style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
+                                Personzentrierte Psychotherapie in Vöcklabruck</h2>
 
                             <p class="u-text-style-main text-gray-600 font-light leading-relaxed max-w-lg mb-8">
-                                Personzentrierte Psychotherapie für Jugendliche und Erwachsene in Wien.<br>
-                                <span class="mt-2 block">In Ausbildung unter
-                                    Supervision</span>
+                                Psychotherapeutin in Fachausbildung unter Lehrsupervision (Humanistische
+                                Psychotherapie).
                             </p>
 
-                            <div class="u-flex flex-wrap gap-md">
+                            <div class="u-flex flex-wrap gap-md mt-10">
                                 <a href="#kontakt"
                                     class="button-primary shadow-lg transition-transform hover-scale u-padding-inline-4 u-padding-block-2 u-text-style-main u-weight-medium text-center">
                                     Termin vereinbaren
@@ -103,9 +160,9 @@
                         <div class="hero-visual animate-fade-in relative u-flex hero-order-1 perspective-container"
                             data-justify="center">
                             <!-- Image Blob -->
-                            <div
-                                class="art-card radius-organic-1 shadow-2xl overflow-hidden transition-transform hover-lift-rotate group art-card-size">
-                                <img src="Lisa-Photo-1.avif" alt="Lisa Berger" class="w-full h-full object-cover block">
+                            <div class="art-card shadow-2xl rounded-3xl overflow-hidden group art-card-size">
+                                <img src="Lisa-Photo-1.avif" alt="Lisa Berger - Psychotherapeutin in Vöcklabruck"
+                                    class="w-full h-full object-cover block">
                             </div>
 
 
@@ -120,98 +177,40 @@
             <!-- ========================================== -->
             <section id="informationen" class="section_informationen relative z-20 u-padding-block-5">
                 <div class="u-container">
-
-                    <!-- Intro Block -->
-                    <div class="u-grid mb-20" data-large-columns="2" data-medium-columns="1" data-align="center">
-                        <div class="glass-panel p-10 rounded-3xl shadow-sm">
-                            <h2 class="u-text-style-h2 text-dark-text mb-6">Mein Angebot</h2>
-                            <p class="u-text-style-main leading-relaxed mb-6 font-medium text-gray-800">
-                                Ich arbeite nach dem personzentrierten Ansatz von Carl Rogers mit Jugendlichen und
-                                Erwachsenen.
-                            </p>
-                            <p class="u-text-style-main leading-relaxed text-gray-600">
-                                Dieser Zugang vertraut darauf, dass jeder Mensch ein inneres Potenzial zur Entfaltung in
-                                sich trägt. In einer Atmosphäre von Einfühlung, Echtheit und respektvoller Annahme
-                                entsteht ein Raum, in dem Sie sich selbst begegnen und entwickeln können.
-                            </p>
-                        </div>
-
-                        <!-- Quote Visual -->
-                        <div class="radius-organic-3 relative glass-panel p-12 u-flex quote-visual" data-align="center"
-                            data-justify="center">
-                            <div class="absolute w-32 h-32 bg-watercolor-yellow blur-xl rounded-full blur-accent-tr">
-                            </div>
-                            <div class="absolute w-32 h-32 bg-watercolor-green blur-xl rounded-full blur-accent-bl">
-                            </div>
-
-                            <p
-                                class="u-text-style-h3 font-serif italic text-dark-text leading-relaxed text-center relative z-10 max-w-xs">
-                                „Das seltsame Paradox ist, dass wenn ich mich so akzeptiere wie ich bin, ich die
-                                Möglichkeit erlange, mich zu verändern.“ — Carl R. Rogers
-                            </p>
-                        </div>
+                    <!-- Quote Visual -->
+                    <div class="mb-20 u-flex mb-20" data-justify="center">
+                        <p
+                            class="u-text-style-h3 font-serif italic text-dark-text leading-relaxed text-center max-w-lg">
+                            „Das seltsame Paradox ist, dass wenn ich mich so akzeptiere wie ich bin, ich die
+                            Möglichkeit erlange, mich zu verändern.“ — Carl R. Rogers
+                        </p>
                     </div>
 
                     <!-- Services Grid -->
-                    <div class="u-grid mb-20 gap-lg-grid" data-large-columns="4" data-medium-columns="2"
+                    <div class="u-grid mb-20 gap-lg-grid" data-large-columns="2" data-medium-columns="1"
                         data-small-columns="1">
 
                         <!-- Service 1 -->
-                        <div class="service-card radius-organic-1 relative p-10 u-flex group transition-all hover-lift service-card--rose"
-                            data-direction="vertical" data-justify="center" data-align="center">
-                            <div class="paper-texture absolute-inset"></div>
+                        <div class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
+                            data-align="center" data-justify="space-between">
+                            <h3
+                                class="u-text-style-h3 u-weight-medium text-dark-text m-0 tracking-tight z-10 text-center">
+                                Psychotherapie</h3>
                             <div
-                                class="icon-circle glass-panel group-hover-scale z-10 mb-4 text-dark-text icon-circle-sm service-card-icon-tl">
+                                class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all">
                                 <i data-lucide="arrow-right" class="icon-sm"></i>
-                            </div>
-                            <div class="z-10 text-center">
-                                <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-2 tracking-tight">
-                                    Einzelpsychotherapie</h3>
                             </div>
                         </div>
 
                         <!-- Service 2 -->
-                        <div class="service-card radius-organic-2 relative p-10 u-flex group transition-all hover-lift service-card--blue"
-                            data-direction="vertical" data-justify="center" data-align="center">
-                            <div class="paper-texture absolute-inset"></div>
+                        <div class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
+                            data-align="center" data-justify="space-between">
+                            <h3
+                                class="u-text-style-h3 u-weight-medium text-dark-text m-0 tracking-tight z-10 text-center">
+                                Paartherapie</h3>
                             <div
-                                class="icon-circle glass-panel group-hover-scale z-10 mb-4 text-dark-text icon-circle-sm service-card-icon-tl">
+                                class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all">
                                 <i data-lucide="arrow-right" class="icon-sm"></i>
-                            </div>
-                            <div class="z-10 text-center">
-                                <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-2 tracking-tight">
-                                    Paartherapie</h3>
-                            </div>
-                        </div>
-
-                        <!-- Service 3 -->
-                        <div class="service-card radius-organic-3 relative p-10 u-flex group transition-all hover-lift service-card--mint"
-                            data-direction="vertical" data-justify="center" data-align="center">
-                            <div class="paper-texture absolute-inset"></div>
-                            <div
-                                class="icon-circle glass-panel group-hover-scale z-10 mb-4 text-dark-text icon-circle-sm service-card-icon-tl">
-                                <i data-lucide="arrow-right" class="icon-sm"></i>
-                            </div>
-                            <div class="z-10 text-center">
-                                <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-2 tracking-tight">
-                                    Selbsterfahrung</h3>
-                                <p class="u-text-style-small text-gray-600 line-clamp-3">Zur Persönlichkeitsentwicklung
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Service 4 -->
-                        <div class="service-card radius-organic-4 relative p-10 u-flex group transition-all hover-lift service-card--warm"
-                            data-direction="vertical" data-justify="center" data-align="center">
-                            <div class="paper-texture absolute-inset"></div>
-                            <div
-                                class="icon-circle glass-panel group-hover-scale z-10 mb-4 text-dark-text icon-circle-sm service-card-icon-tl">
-                                <i data-lucide="arrow-right" class="icon-sm"></i>
-                            </div>
-                            <div class="z-10 text-center">
-                                <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-2 tracking-tight">
-                                    Supervision</h3>
-                                <p class="u-text-style-small text-gray-600 line-clamp-3">Für psychosoziale Berufe</p>
                             </div>
                         </div>
 
@@ -223,53 +222,61 @@
 
                         <div
                             class="info-card radius-organic-4 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Frequenz</h4>
-                            <p class="u-text-style-small text-gray-600 leading-relaxed">Die Einheiten finden in der
-                                Regel 1–2 wöchentlich statt. Besonders zu Beginn ist eine wöchentliche Frequenz
-                                sinnvoll.</p>
+                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Für wen?</h4>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed">Ich arbeite in meiner Praxis mit
+                                Erwachsenen. Für den Beginn einer Psychotherapie benötigen Sie weder eine
+                                krankheitswertige Diagnose noch eine ärztliche Zuweisung. Es reicht Ihre Bereitschaft,
+                                sich mit sich selbst auseinanderzusetzen und sich Zeit für Ihre persönlichen Anliegen zu
+                                nehmen.</p>
                         </div>
 
                         <div
-                            class="info-card radius-organic-1 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Kosten</h4>
-                            <p class="u-text-style-small text-gray-600 leading-relaxed">Eine Einheit (50 Min.) kostet 80
-                                €.<br>Sozialtarif nach Vereinbarung möglich.</p>
-                        </div>
-
-                        <div
-                            class="info-card radius-organic-2 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Rückerstattung</h4>
-                            <p class="u-text-style-small text-gray-600 leading-relaxed">Eine Refundierung durch die
-                                öffentlichen Krankenkassen ist derzeit leider nicht möglich.</p>
+                            class="col-span-2-lg info-card radius-organic-1 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
+                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Kosten und Frequenz</h4>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed mb-4">Die Häufigkeit der
+                                Sitzungen wird individuell vereinbart. Gerade zu Beginn der Therapie hat sich eine
+                                wöchentliche Frequenz bewährt.</p>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed mb-4"><strong
+                                    class="u-weight-medium text-dark-text">Psychotherapie:</strong> Eine Einheit dauert
+                                50 Minuten und kostet 80 €.<br>
+                                <strong class="u-weight-medium text-dark-text">Paartherapie:</strong> Eine Einheit
+                                dauert 75 Minuten und kostet 150 €.
+                            </p>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed">Es ist mir ein Anliegen,
+                                Psychotherapie auch Menschen zugänglich zu machen, die sich dieses Honorar nicht leisten
+                                können. Daher biete ich auf Anfrage eine begrenzte Anzahl an Therapieplätzen zu
+                                Sozialtarifen an. Erkundigen Sie sich gerne persönlich.</p>
                         </div>
 
                         <div
                             class="info-card radius-organic-3 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
                             <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Absageregelung</h4>
-                            <p class="u-text-style-small text-gray-600 leading-relaxed">Kostenfrei bis 24h vorher. Bei
-                                kurzfristiger Absage wird die volle Einheit verrechnet.</p>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed">Einen bereits festgelegten
+                                Termin können Sie bis zu 48 Stunden vor der geplanten Einheit kostenfrei absagen. Ich
+                                bitte um Ihr Verständnis, dass kurzfristige Absagen und versäumte Stunden in Rechnung
+                                gestellt werden, da der Termin ausschließlich für Sie reserviert ist.</p>
                         </div>
 
                         <div
                             class="info-card radius-organic-4 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
                             <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Verschwiegenheit</h4>
                             <p class="u-text-style-small text-gray-600 leading-relaxed">Als Psychotherapeutin bin ich
-                                gemäß §15 Psychotherapiegesetz zur absoluten Verschwiegenheit verpflichtet.</p>
+                                gemäß §15 Psychotherapiegesetz zur absoluten Verschwiegenheit verpflichtet. Diese gilt
+                                etwa auch vor Behörden, der Krankenkassen sowie Ihren Angehörigen.</p>
                         </div>
 
                         <div
-                            class="info-card radius-organic-1 bg-watercolor-mint border-white-10 p-8 relative overflow-hidden group">
-                            <div class="absolute w-32 h-32 blur-2xl rounded-full blur-accent-status">
-                            </div>
-                            <h4 class="u-text-style-h4 u-weight-medium mb-4 u-flex relative z-10 gap-xs"
-                                data-align="center">
-                                <span class="dot bg-watercolor-mint animate-pulse"></span>
-                                Status
-                            </h4>
-                            <p class="u-text-style-small leading-relaxed relative z-10">
-                                "In Ausbildung unter Supervision". Ich befinde mich im letzten Abschnitt meiner
-                                Ausbildung und reflektiere meine Arbeit regelmäßig mit einer erfahrenen Therapeutin.
-                            </p>
+                            class="col-span-2-md info-card radius-organic-2 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
+                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Psychotherapie in Ausbildung
+                                unter Supervision</h4>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed mb-4">Ich befinde mich im letzten
+                                Abschnitt meiner Ausbildung. Zur Qualitätssicherung reflektiere ich meine
+                                psychotherapeutische Arbeit mittels Supervision durch eine langjährig tätige
+                                Psychotherapeutin (anonym und vertraulich).</p>
+                            <p class="u-text-style-small text-gray-600 leading-relaxed">Das bedeutet, dass ich meine
+                                Stunden zu einem niedrigeren Tarif anbieten kann, aber auch, dass Sie keine
+                                Rückerstattung von den Krankenkassen beantragen können (teilweise Ausnahme bei KFG,
+                                KFL).</p>
                         </div>
 
                     </div>
@@ -288,8 +295,9 @@
                         <div class="col-span-5 mobile-center">
                             <div class="sticky sticky-top-nav">
                                 <div
-                                    class="radius-organic-2 relative shadow-2xl transition-transform hover-lift-rotate bg-white about-photo-frame">
-                                    <img src="Lisa-Photo-2.avif" alt="Lisa Berger"
+                                    class="rounded-3xl relative shadow-2xl transition-transform bg-white about-photo-frame">
+                                    <img src="Lisa-Photo-2.avif"
+                                        alt="Lisa Berger Portrait - Psychotherapie Praxis Vöcklabruck"
                                         class="w-full h-full object-cover img-cover-full">
                                 </div>
 
@@ -317,16 +325,13 @@
                                 <h2 class="u-text-style-h2 text-dark-text mb-6">Über mich</h2>
 
                                 <p class="u-text-style-main text-gray-700 leading-relaxed mb-8">
-                                    Ich wurde 1990 in Oberösterreich geboren und bin in einer ländlichen Region
-                                    aufgewachsen. Für mein Studium zog ich nach Wien, wo für 15 Jahre mein
-                                    Lebensmittelpunkt war. In dieser Zeit absolvierte ich meine Ausbildungen und
-                                    arbeitete als Sozialarbeiterin.
+                                    Ich wurde 1990 geboren und bin in Oberösterreich aufgewachsen. Für mein Studium zog
+                                    ich nach Wien, wo ich 15 Jahre lebte und in dieser prägenden Zeit meine Ausbildungen
+                                    absolvierte. Nach meinem Studium war ich als Sozialarbeiterin in einem Notquartier
+                                    tätig, begleitete obdach- und wohnungslose Menschen und war in der
+                                    Straßensozialarbeit tätig.
                                 </p>
                                 <p class="u-text-style-main text-gray-700 leading-relaxed mb-10">
-                                    Dabei begleitete ich fallführend Einzelpersonen und war in der Straßensozialarbeit
-                                    tätig, wobei ich obdachlose Menschen niederschwellig bei der Vermittlung von
-                                    Notquartieren, in der psychosozialen Beratung und bei der Entwicklung von
-                                    Wohnperspektiven unterstützte.
                                     Heute arbeite ich als Psychotherapeutin in niedergelassener Praxis.
                                 </p>
 
@@ -435,15 +440,14 @@
                             <div class="glass-panel p-8 rounded-3xl border-white-40">
                                 <h2 class="u-text-style-h2 text-dark-text mb-4">Kontakt</h2>
                                 <p class="u-text-style-main text-gray-600 leading-relaxed m-0">
-                                    Ich freue mich darauf, Sie kennenzulernen. Nutzen Sie gerne das Formular oder rufen
-                                    Sie mich an.
+                                    Kontaktieren Sie mich gerne per E-Mail oder rufen Sie mich an.
                                 </p>
                             </div>
 
                             <div class="u-flex pt-4 gap-lg-grid" data-direction="vertical">
                                 <!-- Email -->
                                 <a href="mailto:info@psychotherapieberger.at"
-                                    class="radius-organic-1 u-flex group glass-panel p-8 border-white-50 transition-all hover-lift contact-link"
+                                    class="rounded-3xl u-flex group glass-panel p-8 border-t-yellow transition-all hover-lift contact-link"
                                     data-align="center">
                                     <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg">
                                         <i data-lucide="mail"></i>
@@ -454,11 +458,15 @@
                                         <span
                                             class="u-text-style-main u-weight-medium text-dark-text">info@psychotherapieberger.at</span>
                                     </div>
+                                    <div class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-yellow transition-all"
+                                        style="margin-left: auto;">
+                                        <i data-lucide="arrow-right" class="icon-sm"></i>
+                                    </div>
                                 </a>
 
                                 <!-- Phone -->
                                 <a href="tel:+4367763142687"
-                                    class="radius-organic-2 u-flex group glass-panel p-8 border-white-50 transition-all hover-lift contact-link"
+                                    class="rounded-3xl u-flex group glass-panel p-8 border-t-yellow transition-all hover-lift contact-link"
                                     data-align="center">
                                     <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg">
                                         <i data-lucide="phone"></i>
@@ -469,10 +477,16 @@
                                         <span class="u-text-style-main u-weight-medium text-dark-text">+43 677 631 426
                                             87</span>
                                     </div>
+                                    <div class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-yellow transition-all"
+                                        style="margin-left: auto;">
+                                        <i data-lucide="arrow-right" class="icon-sm"></i>
+                                    </div>
                                 </a>
 
                                 <!-- Address -->
-                                <div class="radius-organic-3 u-flex group glass-panel p-8 border-white-50 transition-all hover-lift gap-lg-grid"
+                                <a href="https://maps.app.goo.gl/tj1gyrMPY7TsGkqa8" target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="rounded-3xl u-flex group glass-panel p-8 border-t-yellow transition-all hover-lift gap-lg-grid"
                                     data-align="center">
                                     <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg">
                                         <i data-lucide="map-pin"></i>
@@ -482,48 +496,54 @@
                                             class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-1 label-xs">Praxis</span>
                                         <span class="u-text-style-main u-weight-medium text-dark-text">Stadtplatz 36/25,
                                             4840 Vöcklabruck</span>
+                                        <span class="text-gray-500 mt-2"
+                                            style="font-size: 0.85rem; line-height: 1.4;">Die Praxis befindet sich in
+                                            der Galerie Burgstall im 3. Stock in den Räumlichkeiten der
+                                            „Kleinstadtpraxis“.</span>
                                     </div>
-                                </div>
+                                    <div class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-yellow transition-all"
+                                        style="margin-left: auto;">
+                                        <i data-lucide="arrow-right" class="icon-sm"></i>
+                                    </div>
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Right: Form -->
-                        <div>
-                            <form
-                                class="radius-organic-4 bg-white-60 glass-panel p-10 border-white-60 shadow-2xl transition-transform hover-lift-rotate form-panel">
-                                <div class="u-grid mb-4 gap-md" data-large-columns="2" data-medium-columns="1">
-                                    <div class="u-flex" data-direction="vertical">
-                                        <label for="name"
-                                            class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2 ml-2 label-xs">Name</label>
-                                        <input type="text" id="name" required class="form-input" placeholder="Ihr Name">
+                        <!-- Right: Image & Opening Hours -->
+                        <div class="u-flex" data-direction="vertical" style="gap: 2rem;">
+                            <!-- Opening Hours -->
+                            <div class="rounded-3xl bg-white-60 glass-panel p-10 border-white-60 shadow-sm">
+                                <h3 class="u-text-style-h3 text-dark-text mb-4">Öffnungszeiten</h3>
+                                <div class="u-flex text-gray-700 u-text-style-main" data-direction="vertical"
+                                    style="gap: 0.5rem;">
+                                    <div class="u-flex" data-justify="space-between">
+                                        <span class="u-weight-bold">Mo</span>
+                                        <span>8-12:00</span>
                                     </div>
-                                    <div class="u-flex" data-direction="vertical">
-                                        <label for="phone"
-                                            class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2 ml-2 label-xs">Telefon</label>
-                                        <input type="tel" id="phone" class="form-input" placeholder="Optional">
+                                    <div class="u-flex" data-justify="space-between">
+                                        <span class="u-weight-bold">Di</span>
+                                        <span>16-20:00</span>
+                                    </div>
+                                    <div class="u-flex" data-justify="space-between">
+                                        <span class="u-weight-bold">Mi</span>
+                                        <span>12-20:00</span>
+                                    </div>
+                                    <div class="u-flex" data-justify="space-between">
+                                        <span class="u-weight-bold">Do</span>
+                                        <span>-</span>
+                                    </div>
+                                    <div class="u-flex" data-justify="space-between">
+                                        <span class="u-weight-bold">Fr</span>
+                                        <span>12-20:00</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="u-flex mb-4" data-direction="vertical">
-                                    <label for="email"
-                                        class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2 ml-2 label-xs">E-Mail</label>
-                                    <input type="email" id="email" required class="form-input"
-                                        placeholder="ihre.email@beispiel.com">
-                                </div>
-
-                                <div class="u-flex mb-6" data-direction="vertical">
-                                    <label for="message"
-                                        class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2 ml-2 label-xs">Anliegen</label>
-                                    <textarea id="message" rows="4" required class="form-input no-resize"
-                                        placeholder="Wie kann ich Ihnen helfen?"></textarea>
-                                </div>
-
-                                <button type="submit"
-                                    class="button-primary w-full p-4 u-text-style-main u-weight-bold transition-transform shadow-lg u-flex w-full"
-                                    data-justify="center">
-                                    Nachricht absenden
-                                </button>
-                            </form>
+                            <!-- Handwriting Image -->
+                            <div class="p-4">
+                                <img src="Lisa Handschrift.avif" alt="Lisa Berger Handschrift"
+                                    class="w-full h-auto block" style="border-radius: 1rem;">
+                            </div>
                         </div>
 
                     </div>
@@ -541,8 +561,90 @@
                         <span class="u-weight-regular opacity-80">Alle Rechte vorbehalten.</span>
                     </p>
                     <div class="u-flex gap-lg">
-                        <a href="#" class="u-text-style-small text-gray-500">Impressum</a>
-                        <a href="#" class="u-text-style-small text-gray-500">Datenschutz</a>
+                        <button id="impressum-btn"
+                            class="u-text-style-small text-gray-500 cursor-pointer hover:text-dark-text transition-all"
+                            style="background: none; border: none; padding: 0;">Impressum</button>
+                        <button id="datenschutz-btn"
+                            class="u-text-style-small text-gray-500 cursor-pointer hover:text-dark-text transition-all"
+                            style="background: none; border: none; padding: 0;">Datenschutz</button>
+                    </div>
+                </div>
+
+                <!-- Impressum Accordion Content -->
+                <!-- Impressum Accordion Content -->
+                <div id="impressum-content" class="impressum-wrapper relative">
+                    <button class="accordion-close cursor-pointer transition-all hover-lift"
+                        style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: var(--color-dark-text); padding: 0.5rem; border-radius: 50%; z-index: 20;">
+                        <i data-lucide="x" class="icon-sm"></i>
+                    </button>
+                    <div class="u-container u-padding-block-3 u-text-style-small text-gray-600 leading-relaxed mt-4 relative"
+                        style="border-top: 1px solid rgba(255, 255, 255, 0.5); padding-top: 2rem; padding-bottom: 5rem;">
+                        <h4 class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Impressum</h4>
+                        <div class="u-grid gap-sm-grid" data-large-columns="3" data-medium-columns="1"
+                            data-small-columns="1">
+                            <div>
+                                <p class="mb-4"><strong class="u-weight-bold text-dark-text">Lisa Berger</strong><br>
+                                    Psychotherapeutin in Ausbildung unter Supervision</p>
+
+                                <p class="mb-4"><strong class="u-weight-bold text-dark-text">Praxisadresse:</strong><br>
+                                    Stadtplatz 36/25 (Galerie Burgstall, 3. Stock)<br>
+                                    4840 Vöcklabruck</p>
+                            </div>
+                            <div>
+                                <p class="mb-4"><strong class="u-weight-bold text-dark-text">Kontakt:</strong><br>
+                                    Telefon: +43 677 631 426 87<br>
+                                    E-Mail: <a href="mailto:info@psychotherapieberger.at"
+                                        class="text-gray-600 hoverColor-dark transition-all">info@psychotherapieberger.at</a>
+                                </p>
+                            </div>
+                            <div>
+                                <p class="mb-4"><strong
+                                        class="u-weight-bold text-dark-text">Aufsichtsbehörde:</strong><br>
+                                    Bundesministerium für Soziales, Gesundheit, Pflege und Konsumentenschutz</p>
+
+                                <p class="mb-0"><strong class="u-weight-bold text-dark-text">Berufsrechtliche
+                                        Vorschriften:</strong><br>
+                                    Psychotherapiegesetz</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datenschutz Accordion Content -->
+                <div id="datenschutz-content" class="impressum-wrapper relative">
+                    <button class="accordion-close cursor-pointer transition-all hover-lift"
+                        style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: var(--color-dark-text); padding: 0.5rem; border-radius: 50%; z-index: 20;">
+                        <i data-lucide="x" class="icon-sm"></i>
+                    </button>
+                    <div class="u-container u-padding-block-3 u-text-style-small text-gray-600 leading-relaxed mt-4 relative"
+                        style="border-top: 1px solid rgba(255, 255, 255, 0.5); padding-top: 2rem; padding-bottom: 5rem;">
+                        <h4 class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Datenschutz</h4>
+                        <div class="u-grid gap-sm-grid" data-large-columns="1" data-medium-columns="1"
+                            data-small-columns="1">
+                            <div>
+                                <p class="mb-4">
+                                    Der Schutz Ihrer persönlichen Daten ist mir ein besonderes Anliegen. Ich verarbeite
+                                    Ihre Daten daher ausschließlich auf Grundlage der gesetzlichen Bestimmungen (DSGVO,
+                                    TKG 2003). In diesen Datenschutzinformationen informiere ich Sie über die
+                                    wichtigsten Aspekte der Datenverarbeitung im Rahmen meiner Website sowie der
+                                    therapeutischen Arbeit.
+                                </p>
+                                <p class="mb-4"><strong class="u-weight-bold text-dark-text">Kontakt mit
+                                        mir</strong><br>
+                                    Wenn Sie per E-Mail oder telefonisch Kontakt mit mir aufnehmen, werden Ihre
+                                    angegebenen Daten zwecks Bearbeitung der Anfrage und für den Fall von
+                                    Anschlussfragen bei mir gespeichert. Diese Daten gebe ich nicht ohne Ihre
+                                    Einwilligung weiter. Im Rahmen einer therapeutischen Beziehung unterliege ich der
+                                    strengen gesetzlichen Verschwiegenheitspflicht nach dem Psychotherapiegesetz.</p>
+                                <p class="mb-0"><strong class="u-weight-bold text-dark-text">Ihre Rechte</strong><br>
+                                    Ihnen stehen grundsätzlich die Rechte auf Auskunft, Berichtigung, Löschung,
+                                    Einschränkung, Datenübertragbarkeit, Widerruf und Widerspruch zu. Wenn Sie glauben,
+                                    dass die Verarbeitung Ihrer Daten gegen das Datenschutzrecht verstößt oder Ihre
+                                    datenschutzrechtlichen Ansprüche sonst in einer Weise verletzt worden sind, können
+                                    Sie sich bei der Aufsichtsbehörde beschweren. In Österreich ist dies die
+                                    Datenschutzbehörde.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </footer>
@@ -553,36 +655,7 @@
     <script>
         lucide.createIcons();
 
-        // Mobile Menu Toggle logic
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
         const navBar = document.getElementById('main-nav');
-        let isMenuOpen = false;
-
-        menuBtn.addEventListener('click', () => {
-            isMenuOpen = !isMenuOpen;
-            if (isMenuOpen) {
-                mobileMenu.style.opacity = '1';
-                mobileMenu.style.pointerEvents = 'auto';
-                menuBtn.innerHTML = '<i data-lucide="x"></i>';
-            } else {
-                mobileMenu.style.opacity = '0';
-                mobileMenu.style.pointerEvents = 'none';
-                menuBtn.innerHTML = '<i data-lucide="menu"></i>';
-            }
-            lucide.createIcons();
-        });
-
-        // Close mobile menu on link click
-        document.querySelectorAll('.mobile-nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                isMenuOpen = false;
-                mobileMenu.style.opacity = '0';
-                mobileMenu.style.pointerEvents = 'none';
-                menuBtn.innerHTML = '<i data-lucide="menu"></i>';
-                lucide.createIcons();
-            });
-        });
 
         // Sticky Nav background on scroll
         window.addEventListener('scroll', () => {
@@ -598,84 +671,97 @@
     <div id="service-modal-overlay" class="service-modal-overlay"></div>
 
     <!-- Modal 1: Einzelpsychotherapie -->
-    <div id="modal-1" class="service-modal radius-organic-1 bg-off-white shadow-2xl">
+    <div id="modal-1" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl">
         <button
-            class="modal-close cursor-pointer icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
+            class="modal-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
             <i data-lucide="x" class="icon-sm"></i>
         </button>
         <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Einzelpsychotherapie</h3>
-            <div class="u-text-style-main text-gray-700 u-grid gap-sm">
-                <p>Psychotherapie ist eine wissenschaftlich fundierte Therapieform zur Behandlung von psychischen
-                    Leidenszuständen. Die Gründe für das Aufsuchen einer Psychotherapie können vielseitig sein. Ob
-                    Ängste, Depressionen, Lebenskrisen oder andere Herausforderungen - in der Therapie widmen wir uns
-                    Ihren ganz persönlichen Themen.</p>
-                <p>Ich arbeite nach dem Konzept der Personzentrierten Psychotherapie, die auf Carl R. Rogers zurückgeht.
-                    Dieser Therapierichtung liegt die Überzeugung zugrunde, dass jeder Mensch ein unermessliches
-                    Potential zu Wachstum und Entfaltung in sich trägt. Durch unterschiedliche Erfahrungen kann dieses
-                    Potential eingeschränkt oder blockiert werden, was zu psychischen Belastungen führt. In der
-                    Psychotherapie geht es darum, Zugang zu diesem Potenzial zu finden und Ihre Ihnen innewohnenden
-                    Möglichkeiten (wieder) zu entdecken.</p>
+            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Psychotherapie</h3>
+            <div class="u-text-style-main text-gray-700 u-grid gap-sm" style="text-align: left;">
+                <p>Psychotherapie ist eine wissenschaftlich fundierte Behandlungsform zur Unterstützung bei psychischen
+                    Belastungen und Leidenszuständen.</p>
+                <p>Ich arbeite nach dem Konzept der personzentrierten Psychotherapie, das auf Carl Rogers zurückgeht.
+                    Dieser therapeutische Ansatz basiert auf der Überzeugung, dass jeder Mensch ein unermessliches
+                    Potenzial zu Wachstum und persönlicher Entfaltung in sich trägt. Durch belastende oder
+                    widersprüchliche Erfahrungen kann dieses Potenzial jedoch eingeschränkt oder blockiert werden und
+                    sich in psychischen Beschwerden ausdrücken.</p>
+                <p>In der Psychotherapie geht es darum, Zugang zu diesem Potenzial zu finden und die Ihnen innewohnenden
+                    Möglichkeiten (wieder) zu entdecken. Meine therapeutische Haltung ist dabei queerfreundlich und
+                    diskriminierungssensibel – geprägt von Wertschätzung, Offenheit und Respekt gegenüber
+                    unterschiedlichen Lebensrealitäten.</p>
+                <p>Themen und Anliegen, bei denen ich Unterstützung anbiete, sind unter anderem:</p>
+                <ul class="m-0 list-unstyled u-flex flex-col" data-direction="vertical"
+                    style="gap: 0.5rem; padding-left: 0.5rem;">
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">Psychische Belastungen:</strong> durch
+                            Depression, Angst, Zwang, Sucht, psychotisches Erleben, Essgewohnheiten …</span>
+                    </li>
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">Schwangerschaft und Elternschaft:</strong>
+                            Unsicherheiten, Ängste oder belastende Erfahrungen rund um Schwangerschaft, Geburt und
+                            Elternsein</span>
+                    </li>
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">Traumatische Erfahrungen:</strong>
+                            Belastende Erlebnisse, die beschäftigen – z. B. sexueller Missbrauch, Gewalt oder
+                            Unfälle</span>
+                    </li>
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">LGBTIQA+ Themen:</strong> Fragen rund um
+                            Identität, sexueller Orientierung, Diskriminierungserfahrungen oder
+                            Beziehungsgestaltung</span>
+                    </li>
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">Partnerschaft und Paarbeziehungen:</strong>
+                            Herausforderungen in Partnerschaft/en, Sexualität, Kommunikation oder
+                            Trennungsprozesse</span>
+                    </li>
+                    <li class="u-flex gap-sm" data-align="flex-start">
+                        <span class="rounded-full bullet-dot mt-2"
+                            style="background-color: var(--color-praxis-blue); flex-shrink: 0; margin-top: 0.5rem; width: 6px; height: 6px;"></span>
+                        <span><strong class="u-weight-medium text-dark-text">Lebensveränderungen und Krisen:</strong>
+                            Konflikte, Verlusterfahrungen, Stress oder Überforderung</span>
+                    </li>
+                </ul>
+                <p>Die Gründe für das Aufsuchen einer Psychotherapie können vielseitig sein. Ob Ängste, Depressionen,
+                    Lebenskrisen oder andere Herausforderungen - in der Therapie widmen wir uns Ihren ganz persönlichen
+                    Themen.</p>
             </div>
         </div>
     </div>
 
     <!-- Modal 2: Paartherapie -->
-    <div id="modal-2" class="service-modal radius-organic-2 bg-off-white shadow-2xl">
+    <div id="modal-2" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl">
         <button
-            class="modal-close cursor-pointer icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
+            class="modal-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
             <i data-lucide="x" class="icon-sm"></i>
         </button>
         <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Paar/Beziehungstherapie</h3>
-            <div class="u-text-style-main text-gray-700 u-grid gap-sm">
-                <p>Wenn Beziehungen als belastend oder konflikthaft erlebt werden, kann es sinnvoll sein, diese
-                    gemeinsam zu reflektieren. Diese gemeinsame Auseinandersetzung kann vielfältig sein und ist
-                    unabhängig von Beziehungsform, sexueller Orientierung oder Geschlechtsidentität. In der
-                    Paar/Beziehungstherapie kann es darum gehen, einander besser zuzuhören, wiederkehrende Muster zu
-                    erkennen und neue Möglichkeiten von Verständigung, Nähe und Verbundenheit zu entdecken. Dabei ist
-                    das Ziel nicht immer, die Beziehung/en fortzuführen. Vielmehr steht im Mittelpunkt, was für Sie
-                    persönlich stimmig ist.</p>
+            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Paartherapie</h3>
+            <div class="u-text-style-main text-gray-700 u-grid gap-sm" style="text-align: left;">
+                <p>In der Paar- und Partner*innentherapie kann es darum gehen, einander wieder besser zuzuhören,
+                    festgefahrene oder wiederkehrende Muster zu erkennen und neue Wege der Verständigung, Nähe und
+                    Verbundenheit zu entdecken. Paar- und Partner*innentherapie bietet einen geschützten Rahmen, in dem
+                    Unterschiedlichkeiten, Konflikte und Bedürfnisse offen angesprochen und gemeinsam reflektiert werden
+                    können.</p>
+                <p>Das Ziel besteht dabei nicht zwangsläufig darin, eine Beziehung fortzuführen. Vielmehr geht es darum,
+                    gemeinsam zu klären, was für Sie persönlich und für Ihre Beziehung/en stimmig ist.</p>
+                <p>Ich biete Paar- und Partner*innentherapie für Menschen in allen Beziehungsformen an – unabhängig von
+                    Geschlechtsidentität, sexueller Orientierung oder gelebtem Beziehungsmodell.</p>
             </div>
         </div>
     </div>
-
-    <!-- Modal 3: Selbsterfahrung -->
-    <div id="modal-3" class="service-modal radius-organic-3 bg-off-white shadow-2xl">
-        <button
-            class="modal-close cursor-pointer icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
-            <i data-lucide="x" class="icon-sm"></i>
-        </button>
-        <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-2 tracking-tight">Selbsterfahrung</h3>
-            <p class="u-text-style-small text-gray-600 mb-4 tracking-tight">Zur Persönlichkeitsentwicklung</p>
-            <div class="u-text-style-main text-gray-700 u-grid gap-sm">
-                <p>Der bewusste Blick nach innen lädt dazu ein, sich selbst achtsam zu begegnen und persönliche Themen
-                    zu vertiefen. Im Mittelpunkt steht das Wahrnehmen und Verstehen der eigenen Gedanken, Gefühle und
-                    Verhaltensweisen. Durch das Erkunden innerer Prozesse können neue Einsichten entstehen und
-                    persönliche Entwicklung angestoßen werden, was sich bereichernd auf die Lebensqualität auswirken
-                    kann.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal 4: Supervision -->
-    <div id="modal-4" class="service-modal radius-organic-4 bg-off-white shadow-2xl">
-        <button
-            class="modal-close cursor-pointer icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
-            <i data-lucide="x" class="icon-sm"></i>
-        </button>
-        <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-2 tracking-tight">Einzelsupervision</h3>
-            <p class="u-text-style-small text-gray-600 mb-4 tracking-tight">Für psychosoziale Berufe</p>
-            <div class="u-text-style-main text-gray-700 u-grid gap-sm">
-                <p>In der Supervision können berufliche Rollen, Beziehungen und Herausforderungen bewusst reflektiert
-                    werden. Dies kann entlasten und dazu führen, dass Perspektiven für den Arbeitsalltag gewonnen
-                    werden.</p>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Script (must be AFTER modal HTML) -->
     <script>
         // Service Modals Logic
@@ -721,6 +807,58 @@
 
         // Re-init Lucide icons for X buttons in modals
         lucide.createIcons();
+
+        // Impressum & Datenschutz Accordion Logic
+        const impressumBtn = document.getElementById('impressum-btn');
+        const impressumContent = document.getElementById('impressum-content');
+
+        const datenschutzBtn = document.getElementById('datenschutz-btn');
+        const datenschutzContent = document.getElementById('datenschutz-content');
+
+        const accordionCloseBtns = document.querySelectorAll('.accordion-close');
+
+        function toggleAccordion(contentToToggle, otherContent) {
+            if (contentToToggle.classList.contains('active')) {
+                contentToToggle.classList.remove('active');
+            } else {
+                contentToToggle.classList.add('active');
+                if (otherContent && otherContent.classList.contains('active')) {
+                    otherContent.classList.remove('active');
+                }
+
+                // Scroll to the bottom gently after the accordion is mostly open
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 250);
+            }
+        }
+
+        if (impressumBtn && impressumContent) {
+            impressumBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleAccordion(impressumContent, datenschutzContent);
+            });
+        }
+
+        if (datenschutzBtn && datenschutzContent) {
+            datenschutzBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleAccordion(datenschutzContent, impressumContent);
+            });
+        }
+
+        // Hook up close buttons
+        accordionCloseBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (impressumContent) impressumContent.classList.remove('active');
+                if (datenschutzContent) datenschutzContent.classList.remove('active');
+            });
+        });
     </script>
 </body>
 

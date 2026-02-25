@@ -203,6 +203,18 @@ a {
     grid-template-columns: 1fr;
 }
 
+@media screen and (min-width: 992px) {
+    .col-span-2-lg {
+        grid-column: span 2;
+    }
+}
+
+@media screen and (min-width: 480px) and (max-width: 991px) {
+    .col-span-2-md {
+        grid-column: span 2;
+    }
+}
+
 @media screen and (max-width: 991px) {
     [data-medium-columns="2"] {
         grid-template-columns: repeat(2, 1fr);
@@ -266,6 +278,14 @@ a {
 
 [data-direction="horizontal"] {
     flex-direction: row;
+}
+
+@media screen and (max-width: 767px) {
+    .flex-mobile-col {
+        flex-direction: column !important;
+        text-align: center;
+        gap: 1.5rem;
+    }
 }
 
 [data-align="center"] {
@@ -855,6 +875,14 @@ a {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.border-t-yellow {
+    border: 1px solid var(--swatch--sand);
+}
+
+.border-t-green {
+    border: 1px solid var(--swatch--sage);
+}
+
 /* Missing Color Utilities */
 .bg-white {
     background-color: #ffffff;
@@ -986,6 +1014,22 @@ a {
     margin-top: 0.5rem;
 }
 
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.mt-10 {
+    margin-top: 5rem;
+}
+
 .mb-1 {
     margin-bottom: 0.25rem;
 }
@@ -1023,7 +1067,7 @@ a {
 }
 
 .mb-20 {
-    margin-bottom: 9rem;
+    margin-bottom: 12rem;
 }
 
 .ml-2 {
@@ -1311,6 +1355,14 @@ html.scroll-smooth {
     width: 18px;
 }
 
+.group:hover .group-hover-border-green {
+    border: 1px solid var(--swatch--sage);
+}
+
+.group:hover .group-hover-border-yellow {
+    border: 1px solid var(--swatch--sand);
+}
+
 /* --- Über mich / About Section --- */
 .about-photo-frame {
     aspect-ratio: 3/4;
@@ -1468,4 +1520,23 @@ html.scroll-smooth {
     /* Base padding handled by utilities, ensuring text reads well */
     max-width: 650px;
     margin: 0 auto;
+    max-height: calc(90vh - 2rem);
+    overflow-y: auto;
+}
+
+/* ========================================================= */
+/* IMPRESSUM ACCORDION                                       */
+/* ========================================================= */
+
+.impressum-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    opacity: 0;
+}
+
+.impressum-wrapper.active {
+    max-height: 2000px;
+    /* Increased to allow full expansion of longer texts */
+    opacity: 1;
 }
