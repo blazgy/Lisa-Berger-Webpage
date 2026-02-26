@@ -90,28 +90,23 @@
         <!-- ========================================== -->
         <!-- NAVIGATION                                 -->
         <!-- ========================================== -->
-        <nav class="nav-bar transition-all" id="main-nav">
-            <div class="u-container nav-container u-flex" data-justify="space-between" data-align="center">
-                <!-- Logo -->
-                <a href="#" class="nav-logo z-50 u-flex" data-align="center">
-                    <img src="berger-logo.svg" alt="Lisa Berger" style="height: 48px; width: auto;">
-                </a>
+        <nav class="nav-island" id="main-nav">
+            <!-- Logo -->
+            <a href="#" class="nav-logo u-flex" data-align="center">
+                <img src="berger-logo.svg" alt="Lisa Berger" style="height: 40px; width: auto;">
+            </a>
 
-                <!-- Desktop Links -->
-                <div class="u-flex gap-lg" data-align="center">
-                    <div class="nav-links hidden-md u-flex gap-lg" data-align="center">
-                        <a href="#willkommen" class="nav-link">Willkommen</a>
-                        <a href="#informationen" class="nav-link">Informationen</a>
-                        <a href="#ueber-mich" class="nav-link">Über mich</a>
-                        <a href="#kontakt" class="nav-link">Kontakt</a>
-                    </div>
-
-                    <a href="#kontakt"
-                        class="button-small u-text-style-small u-weight-medium transition-transform shadow-md hover-scale">
-                        Termin vereinbaren
-                    </a>
-                </div>
+            <!-- Desktop Links -->
+            <div class="nav-links hidden-md u-flex gap-lg" data-align="center">
+                <a href="#willkommen" class="nav-link">Willkommen</a>
+                <a href="#informationen" class="nav-link">Informationen</a>
+                <a href="#ueber-mich" class="nav-link">Über mich</a>
+                <a href="#kontakt" class="nav-link">Kontakt</a>
             </div>
+
+            <a href="#kontakt" class="nav-cta-btn u-text-style-small u-weight-medium">
+                Termin vereinbaren
+            </a>
         </nav>
 
         <main class="main_wrapper">
@@ -144,13 +139,13 @@
                                 Psychotherapie).
                             </p>
 
-                            <div class="u-flex flex-wrap gap-md mt-10">
+                            <div class="u-flex flex-wrap gap-md mt-10" data-align="center">
                                 <a href="#kontakt"
-                                    class="button-primary shadow-lg transition-transform hover-scale u-padding-inline-4 u-padding-block-2 u-text-style-main u-weight-medium text-center">
+                                    class="button-primary shadow-lg transition-transform hover-scale u-text-style-main u-weight-medium text-center">
                                     Termin vereinbaren
                                 </a>
                                 <a href="#ueber-mich"
-                                    class="button-secondary glass-panel shadow-sm transition-transform hover-scale u-padding-inline-4 u-padding-block-2 u-text-style-main u-weight-medium text-center">
+                                    class="button-secondary shadow-sm bg-off-white hover-scale transition-transform">
                                     Über mich
                                 </a>
                             </div>
@@ -294,15 +289,16 @@
                         <!-- Left: Image Column (uses grid-column span 5) -->
                         <div class="col-span-5 mobile-center">
                             <div class="sticky sticky-top-nav">
-                                <div
-                                    class="rounded-3xl relative shadow-2xl transition-transform bg-white about-photo-frame">
-                                    <img src="Lisa-Photo-2.avif"
-                                        alt="Lisa Berger Portrait - Psychotherapie Praxis Vöcklabruck"
-                                        class="w-full h-full object-cover img-cover-full">
+                                <div class="hero-visual relative u-flex perspective-container" data-justify="center">
+                                    <div class="art-card shadow-2xl rounded-3xl overflow-hidden group art-card-size">
+                                        <img src="Lisa-Photo-2.avif"
+                                            alt="Lisa Berger Portrait - Psychotherapie Praxis Vöcklabruck"
+                                            class="w-full h-full object-cover block">
+                                    </div>
                                 </div>
 
-                                <div class="u-flex glass-panel rounded-3xl p-4 border-white-30"
-                                    data-justify="space-between" data-align="center">
+                                <div class="u-flex glass-panel rounded-3xl p-10 mt-4" data-justify="space-between"
+                                    data-align="center">
                                     <div class="u-flex" data-direction="vertical">
                                         <span
                                             class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider label-xs">Geboren</span>
@@ -571,7 +567,6 @@
                 </div>
 
                 <!-- Impressum Accordion Content -->
-                <!-- Impressum Accordion Content -->
                 <div id="impressum-content" class="impressum-wrapper relative">
                     <button class="accordion-close cursor-pointer transition-all hover-lift"
                         style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: var(--color-dark-text); padding: 0.5rem; border-radius: 50%; z-index: 20;">
@@ -660,9 +655,9 @@
         // Sticky Nav background on scroll
         window.addEventListener('scroll', () => {
             if (window.scrollY > 20) {
-                navBar.classList.add('glass-panel', 'shadow-sm', 'scrolled');
+                navBar.classList.add('scrolled');
             } else {
-                navBar.classList.remove('glass-panel', 'shadow-sm', 'scrolled');
+                navBar.classList.remove('scrolled');
             }
         });
     </script>
