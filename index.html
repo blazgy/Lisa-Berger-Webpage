@@ -13,10 +13,10 @@
     <link rel="canonical" href="https://www.psychotherapieberger.at/">
 
     <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-16x16.png">
-    <link rel="manifest" href="favicons/site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -84,12 +84,6 @@
 
 <body class="bg-off-white text-dark-text">
     <div class="page_wrap">
-
-
-
-        <!-- ========================================== -->
-        <!-- NAVIGATION                                 -->
-        <!-- ========================================== -->
         <nav class="nav-island" id="main-nav">
             <!-- Logo -->
             <a href="#" class="nav-logo u-flex" data-align="center">
@@ -110,10 +104,6 @@
         </nav>
 
         <main class="main_wrapper">
-
-            <!-- ========================================== -->
-            <!-- HERO / WILLKOMMEN                          -->
-            <!-- ========================================== -->
             <section id="willkommen" class="section_hero relative overflow-hidden u-flex section-fullscreen"
                 data-align="center">
                 <div class="u-container z-10">
@@ -155,9 +145,6 @@
                 </div>
             </section>
 
-            <!-- ========================================== -->
-            <!-- INFORMATIONEN / SERVICES                   -->
-            <!-- ========================================== -->
             <section id="informationen" class="section_informationen relative z-20 u-padding-block-5">
                 <div class="u-container">
                     <!-- Quote Visual -->
@@ -263,9 +250,6 @@
                 </div>
             </section>
 
-            <!-- ========================================== -->
-            <!-- ÜBER MICH                                  -->
-            <!-- ========================================== -->
             <section id="ueber-mich" class="section_about relative overflow-hidden u-padding-block-5">
                 <div class="absolute-inset bg-white-60 z-0"></div> <!-- Soft readable overlay -->
                 <div class="u-container relative z-10">
@@ -307,9 +291,6 @@
                 </div>
             </section>
 
-            <!-- ========================================== -->
-            <!-- KONTAKT                                    -->
-            <!-- ========================================== -->
             <section id="kontakt" class="section_contact relative z-10 u-padding-block-5">
                 <div class="u-container">
                     <div class="u-grid gap-xxl" data-large-columns="2" data-medium-columns="1">
@@ -404,9 +385,6 @@
                 </div>
             </section>
 
-            <!-- ========================================== -->
-            <!-- FOOTER                                     -->
-            <!-- ========================================== -->
             <footer class="bg-white-60 glass-panel border-white-50 relative z-10">
                 <div class="u-container u-flex flex-wrap gap-md" data-justify="space-between" data-align="center"
                     style="min-height: 10vh;">
@@ -616,7 +594,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal Script (must be AFTER modal HTML) -->
+
     <script>
         // Service Modals Logic
         const overlay = document.getElementById('service-modal-overlay');
@@ -680,7 +658,6 @@
                     otherContent.classList.remove('active');
                 }
 
-                // Scroll to the bottom gently after the accordion is mostly open
                 setTimeout(() => {
                     window.scrollTo({
                         top: document.body.scrollHeight,
