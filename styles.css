@@ -1600,16 +1600,20 @@ html.scroll-smooth {
 /* ========================================================= */
 
 .impressum-wrapper {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
     opacity: 0;
+    overflow: hidden;
 }
 
 .impressum-wrapper.active {
-    max-height: 2000px;
-    /* Increased to allow full expansion of longer texts */
+    grid-template-rows: 1fr;
     opacity: 1;
+}
+
+.impressum-inner {
+    min-height: 0;
 }
 
 /* ========================================================= */
