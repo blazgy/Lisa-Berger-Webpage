@@ -146,3 +146,185 @@ exports.bookAppointment = onRequest({ cors: true }, async (req, res) => {
     res.status(409).json({ error: error.message });
   }
 });
+
+// Admin Authentication Middleware
+async function verifyAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+  const idToken = authHeader.split("Bearer ")[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Ensure email matches admin email
+    if (decodedToken.email !== "info@psychotherapieberger.at") {
+      return res.status(403).json({ error: "Forbidden." });
+    }
+    req.admin = decodedToken;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: "Invalid token." });
+  }
+}
+
+// Admin API Endpoints
+exports.admin = {
+  createSlot: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const { dateTime, duration, type } = req.body;
+        if (!dateTime || !duration || !type) {
+          return res.status(400).json({ error: "Missing required fields." });
+        }
+        const parsedDuration = Number(duration);
+        if (parsedDuration !== 50 && parsedDuration !== 90) {
+          return res.status(400).json({ error: "Duration must be 50 or 90." });
+        }
+        if (type !== "psychotherapie" && type !== "paartherapie") {
+          return res.status(400).json({ error: "Type must be 'psychotherapie' or 'paartherapie'." });
+        }
+        const dateObj = new Date(dateTime);
+        if (isNaN(dateObj.getTime())) {
+          return res.status(400).json({ error: "Invalid date format." });
+        }
+
+        const slotRef = db.collection("slots").doc();
+        await slotRef.set({
+          dateTime: admin.firestore.Timestamp.fromDate(dateObj),
+          duration: parsedDuration,
+          type,
+          status: "available",
+          bookingId: null
+        });
+
+        res.status(200).json({ success: true, id: slotRef.id });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  deleteSlot: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const { slotId } = req.body;
+        if (!slotId) {
+          return res.status(400).json({ error: "Missing slotId." });
+        }
+
+        const slotRef = db.collection("slots").doc(slotId);
+        const slotDoc = await slotRef.get();
+        if (!slotDoc.exists) {
+          return res.status(404).json({ error: "Slot not found." });
+        }
+        const slotData = slotDoc.data();
+        if (slotData.status !== "available") {
+          return res.status(400).json({ error: "Cannot delete a booked slot." });
+        }
+
+        await slotRef.delete();
+        res.status(200).json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  getBookings: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const snapshot = await db.collection("bookings")
+          .orderBy("dateTime", "asc")
+          .get();
+
+        const bookings = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          bookings.push({
+            id: doc.id,
+            slotId: data.slotId,
+            dateTime: data.dateTime.toDate().toISOString(),
+            duration: data.duration,
+            type: data.type,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            notes: data.notes,
+            createdAt: data.createdAt ? data.createdAt.toDate().toISOString() : null
+          });
+        });
+
+        res.status(200).json(bookings);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  cancelBooking: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const { bookingId } = req.body;
+        if (!bookingId) {
+          return res.status(400).json({ error: "Missing bookingId." });
+        }
+
+        const bookingRef = db.collection("bookings").doc(bookingId);
+        
+        const bookingData = await db.runTransaction(async (transaction) => {
+          const bookingDoc = await transaction.get(bookingRef);
+          if (!bookingDoc.exists) {
+            throw new Error("Booking not found.");
+          }
+          const data = bookingDoc.data();
+          const slotRef = db.collection("slots").doc(data.slotId);
+          const slotDoc = await transaction.get(slotRef);
+          
+          if (slotDoc.exists) {
+            transaction.update(slotRef, {
+              status: "available",
+              bookingId: null
+            });
+          }
+          
+          transaction.delete(bookingRef);
+          return data;
+        });
+
+        // Format DateTime for client email (Europe/Vienna timezone)
+        const formattedDate = new Date(bookingData.dateTime.toDate()).toLocaleString("de-AT", {
+          timeZone: "Europe/Vienna",
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+        try {
+          await resend.emails.send({
+            from: "Lisa Berger Psychotherapie <info@psychotherapieberger.at>",
+            to: bookingData.email,
+            subject: "Absage Termin - Lisa Berger",
+            html: `
+              <h2>Terminabsage</h2>
+              <p>Sehr geehrte(r) ${bookingData.name},</p>
+              <p>Ihr vereinbarter Termin am <strong>${formattedDate} Uhr</strong> wurde storniert.</p>
+              <p>Falls dies ein Versehen war oder Sie einen neuen Termin vereinbaren möchten, können Sie dies gerne wieder über die Website tun.</p>
+              <br>
+              <p>Mit freundlichen Grüßen,<br>Lisa Berger, MA</p>
+            `
+          });
+        } catch (emailError) {
+          console.error("Cancellation email sending failed:", emailError);
+        }
+
+        res.status(200).json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  })
+};
+
