@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lisa Berger Psychotherapie</title>
+    
+    <!-- SEO & Accessibility -->
+    <meta name="description" content="Verwaltungsbereich für die Psychotherapie-Praxis von Lisa Berger.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.4">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase Compat CDN SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <style>
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--swatch--off-white);
+            z-index: 1000;
+            font-family: var(--font-family--heading);
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(179, 218, 182, 0.2);
+            border-top-color: var(--swatch--sage);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .dashboard-header {
+            margin-bottom: var(--space--3);
+            border-bottom: 1px solid rgba(179, 218, 182, 0.3);
+            padding: var(--space--2) 0;
+        }
+
+        .dashboard-container {
+            padding-bottom: var(--space--5);
+        }
+
+        .dashboard-title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: var(--space--3);
+        }
+
+        .card-header-sage {
+            border-bottom: 2px solid var(--swatch--sage);
+            padding-bottom: 0.75rem;
+            margin-bottom: var(--space--2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dashboard-card {
+            border-radius: 20px;
+            padding: var(--space--3);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            height: 100%;
+        }
+
+        /* Form elements */
+        .form-select, .form-input-date {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            font-family: var(--font-family--body);
+            font-size: var(--text-size--small);
+            color: var(--swatch--dark-text);
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus, .form-input-date:focus {
+            outline: none;
+            border-color: var(--swatch--sage);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.2);
+        }
+
+        .form-row {
+            margin-bottom: var(--space--2);
+        }
+
+        /* Booking Cards */
+        .booking-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2);
+        }
+
+        .booking-item {
+            border-radius: 16px;
+            padding: var(--space--2);
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .booking-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.03);
+            border-color: var(--swatch--sage);
+        }
+
+        .booking-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+            padding-bottom: 8px;
+        }
+
+        .booking-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px 16px;
+            font-size: var(--text-size--small);
+        }
+
+        .detail-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--swatch--dark-text);
+        }
+
+        .detail-line i {
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+
+        .booking-notes {
+            background: rgba(179, 218, 182, 0.1);
+            border-left: 3px solid var(--swatch--sage);
+            padding: 8px 12px;
+            border-radius: 4px 12px 12px 4px;
+            font-size: var(--text-size--small);
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-psychotherapie {
+            background-color: rgba(179, 218, 182, 0.25);
+            color: #27562a;
+            border: 1px solid rgba(179, 218, 182, 0.5);
+        }
+
+        .badge-paartherapie {
+            background-color: rgba(245, 223, 156, 0.25);
+            color: #604a11;
+            border: 1px solid rgba(245, 223, 156, 0.5);
+        }
+
+        .btn-cancel {
+            background: rgba(239, 68, 68, 0.08);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
+        }
+
+        /* Available Slots List */
+        .slot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .slot-item {
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: var(--text-size--small);
+            transition: all 0.2s ease;
+        }
+
+        .slot-item:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--swatch--sage);
+        }
+
+        .slot-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space--4) var(--space--2);
+            color: #6b7280;
+            font-style: italic;
+            font-size: var(--text-size--small);
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: white;
+            border-left: 4px solid var(--swatch--sage);
+            border-radius: 8px;
+            padding: 16px var(--space--2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast-notification.active {
+            transform: translateY(0);
+        }
+
+        .toast-notification.error {
+            border-left-color: #ef4444;
+        }
+
+        /* Search Filter style */
+        .search-bar {
+            position: relative;
+            margin-bottom: var(--space--2);
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.6);
+            font-size: var(--text-size--small);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--swatch--sage);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-refresh:hover {
+            background: white;
+            border-color: var(--swatch--sage);
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="bg-off-white text-dark-text">
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <p class="u-text-style-small text-gray-600">Verbindung wird hergestellt...</p>
+    </div>
+
+    <!-- Admin App Wrapper -->
+    <div id="admin-app" class="page_wrap" style="display: none;">
+        <!-- Global background container -->
+        <div class="global-background">
+            <div class="paper-texture"></div>
+            <div class="blob blob-1 radius-organic-1 bg-watercolor-rose"></div>
+            <div class="blob blob-2 radius-organic-2 bg-watercolor-peach"></div>
+            <div class="blob blob-3 radius-organic-3 bg-watercolor-lavender"></div>
+            <div class="blob blob-4 radius-organic-4 bg-watercolor-sky"></div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <header class="dashboard-header">
+            <div class="u-container u-flex" data-justify="space-between" data-align="center">
+                <a href="#" class="nav-logo u-flex" data-align="center">
+                    <img src="berger-logo.svg" alt="Lisa Berger" style="height: 36px; width: auto;">
+                </a>
+                <div class="u-flex gap-md" data-align="center">
+                    <span id="user-email-display" class="u-text-style-small text-gray-600 font-serif hidden-md"></span>
+                    <button type="button" id="logout-btn" class="button-small u-flex gap-sm" data-align="center">
+                        <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Abmelden
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main_wrapper dashboard-container">
+            <div class="u-container">
+                
+                <div class="dashboard-title-bar">
+                    <div>
+                        <h1 class="u-text-style-h2 text-dark-text mb-1">Praxis-Dashboard</h1>
+                        <p class="u-text-style-small text-gray-600">Online-Terminbuchungen und Verfügbarkeiten verwalten</p>
+                    </div>
+                    <button type="button" id="refresh-all-btn" class="btn-refresh" title="Daten aktualisieren">
+                        <i data-lucide="refresh-cw" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="u-grid" data-large-columns="12" data-medium-columns="1">
+                    
+                    <!-- Left: Upcoming Appointments (Col-span-7) -->
+                    <section class="col-span-7">
+                        <div class="dashboard-card glass-panel">
+                            <div class="card-header-sage">
+                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                    <i data-lucide="calendar-check" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                    Gebuchte Termine
+                                </h2>
+                                <span id="bookings-count" class="badge badge-psychotherapie">0</span>
+                            </div>
+
+                            <div class="search-bar">
+                                <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+                                <input type="text" id="bookings-search" placeholder="Nach Klient:in, E-Mail oder Anmerkungen suchen..." class="search-input">
+                            </div>
+
+                            <div id="bookings-list" class="booking-list">
+                                <!-- Bookings populated by JS -->
+                                <div class="empty-state">Lade Termine...</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Right: Manage Availability & Slots (Col-span-5) -->
+                    <section class="col-span-5 u-flex" data-direction="vertical" style="gap: var(--space--3);">
+                        
+                        <!-- Create Available Slot Form -->
+                        <div class="dashboard-card glass-panel">
+                            <div class="card-header-sage">
+                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                    <i data-lucide="plus-circle" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                    Termin freigeben
+                                </h2>
+                            </div>
+
+                            <form id="create-slot-form" class="u-flex" data-direction="vertical" style="gap: 12px;">
+                                <div class="form-row">
+                                    <label for="slot-datetime" class="input-label">Datum & Uhrzeit</label>
+                                    <input type="datetime-local" id="slot-datetime" name="dateTime" required class="form-input-date">
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="slot-type" class="input-label">Therapieform</label>
+                                    <select id="slot-type" name="type" required class="form-select">
+                                        <option value="psychotherapie">Einzelpsychotherapie (50 Min)</option>
+                                        <option value="paartherapie">Paartherapie (90 Min)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="slot-duration" class="input-label">Dauer (Minuten)</label>
+                                    <select id="slot-duration" name="duration" required class="form-select">
+                                        <option value="50">50 Minuten (Standard Einzel)</option>
+                                        <option value="90">90 Minuten (Standard Paar)</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" id="create-slot-submit" class="button-primary w-full mt-2" style="background-color: var(--swatch--sand); border-color: var(--swatch--sand);">
+                                    <span>Termin hinzufügen</span>
+                                    <i data-lucide="plus" style="width: 18px; height: 18px; margin-left: 6px;"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Unbooked Available Slots List -->
+                        <div class="dashboard-card glass-panel">
+                            <div class="card-header-sage">
+                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                    <i data-lucide="clock" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                    Freigegebene Slots
+                                </h2>
+                                <span id="slots-count" class="badge badge-psychotherapie">0</span>
+                            </div>
+
+                            <div id="slots-list" class="slot-list">
+                                <!-- Slots populated by JS -->
+                                <div class="empty-state">Lade freie Termine...</div>
+                            </div>
+                        </div>
+
+                    </section>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="toast" class="toast-notification">
+        <i id="toast-icon" data-lucide="check" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+        <span id="toast-message">Meldung</span>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // API Configuration: Replace placeholders with your deployed URLs if different
+        const API_URLS = {
+            getAvailableSlots: 'https://getavailableslots-uc.a.run.app',
+            getBookings: 'https://admin-getbookings-uc.a.run.app',
+            cancelBooking: 'https://admin-cancelbooking-uc.a.run.app',
+            createSlot: 'https://admin-createslot-uc.a.run.app',
+            deleteSlot: 'https://admin-deleteslot-uc.a.run.app'
+        };
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "PLACEHOLDER_API_KEY", 
+            authDomain: "lisa-berger-webpage.firebaseapp.com",
+            projectId: "lisa-berger-webpage",
+            storageBucket: "lisa-berger-webpage.appspot.com",
+            messagingSenderId: "PLACEHOLDER_SENDER_ID",
+            appId: "PLACEHOLDER_APP_ID"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+
+        // State variables
+        let bookings = [];
+        let slots = [];
+
+        // Elements
+        const loadingScreen = document.getElementById("loading-screen");
+        const adminApp = document.getElementById("admin-app");
+        const logoutBtn = document.getElementById("logout-btn");
+        const userEmailDisplay = document.getElementById("user-email-display");
+        const bookingsListEl = document.getElementById("bookings-list");
+        const slotsListEl = document.getElementById("slots-list");
+        const createSlotForm = document.getElementById("create-slot-form");
+        const bookingsSearchInput = document.getElementById("bookings-search");
+        const bookingsCountEl = document.getElementById("bookings-count");
+        const slotsCountEl = document.getElementById("slots-count");
+        const refreshAllBtn = document.getElementById("refresh-all-btn");
+        const slotTypeSelect = document.getElementById("slot-type");
+        const slotDurationSelect = document.getElementById("slot-duration");
+
+        // Toast Notification System
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            const toastMessage = document.getElementById("toast-message");
+            const toastIcon = document.getElementById("toast-icon");
+
+            toastMessage.textContent = message;
+            
+            if (isError) {
+                toast.classList.add("error");
+                toastIcon.setAttribute("data-lucide", "alert-circle");
+                toastIcon.style.color = "#dc2626";
+            } else {
+                toast.classList.remove("error");
+                toastIcon.setAttribute("data-lucide", "check");
+                toastIcon.style.color = "#10b981";
+            }
+            
+            lucide.createIcons();
+            toast.classList.add("active");
+
+            setTimeout(() => {
+                toast.classList.remove("active");
+            }, 4000);
+        }
+
+        // Auto-change duration when type is selected in form
+        slotTypeSelect.addEventListener("change", () => {
+            if (slotTypeSelect.value === "psychotherapie") {
+                slotDurationSelect.value = "50";
+            } else if (slotTypeSelect.value === "paartherapie") {
+                slotDurationSelect.value = "90";
+            }
+        });
+
+        // Helper: retrieve Auth Headers with refreshed Firebase Token
+        async function getAuthHeaders() {
+            const user = auth.currentUser;
+            if (!user) {
+                // Fallback to local storage
+                const localToken = localStorage.getItem("firebaseIdToken");
+                if (!localToken) {
+                    window.location.href = "login.html";
+                    throw new Error("Nicht authentifiziert");
+                }
+                return {
+                    "Authorization": `Bearer ${localToken}`,
+                    "Content-Type": "application/json"
+                };
+            }
+            
+            try {
+                const token = await user.getIdToken();
+                localStorage.setItem("firebaseIdToken", token); // Update local storage
+                return {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                };
+            } catch (err) {
+                console.error("Token refresh error:", err);
+                const localToken = localStorage.getItem("firebaseIdToken");
+                if (!localToken) {
+                    window.location.href = "login.html";
+                    throw new Error("Nicht authentifiziert");
+                }
+                return {
+                    "Authorization": `Bearer ${localToken}`,
+                    "Content-Type": "application/json"
+                };
+            }
+        }
+
+        // Format Date Time to local European/Vienna format
+        function formatDateTime(isoString) {
+            const dateObj = new Date(isoString);
+            return dateObj.toLocaleString("de-AT", {
+                timeZone: "Europe/Vienna",
+                weekday: "short",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }) + " Uhr";
+        }
+
+        // Format raw UTC datetime-local input value to ISO UTC string
+        function formatInputToISO(localDateTimeStr) {
+            const date = new Date(localDateTimeStr);
+            return date.toISOString();
+        }
+
+        // Check Auth State Change
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Allow only authorized user email
+                if (user.email === "info@psychotherapieberger.at") {
+                    userEmailDisplay.textContent = user.email;
+                    loadingScreen.style.display = "none";
+                    adminApp.style.display = "flex";
+                    loadDashboardData();
+                } else {
+                    console.error("Access forbidden: User is not the designated admin.");
+                    showToast("Zugriff verweigert: Sie haben keine Administratorrechte.", true);
+                    auth.signOut();
+                }
+            } else {
+                // Not authenticated, clean token and redirect
+                localStorage.removeItem("firebaseIdToken");
+                loadingScreen.style.display = "none";
+                adminApp.style.display = "none";
+                window.location.href = "login.html";
+            }
+        });
+
+        // Logout click handler
+        logoutBtn.addEventListener("click", async () => {
+            try {
+                await auth.signOut();
+                localStorage.removeItem("firebaseIdToken");
+                window.location.href = "login.html";
+            } catch (err) {
+                console.error("Logout failed:", err);
+                showToast("Abmeldung fehlgeschlagen.", true);
+            }
+        });
+
+        // Refresh buttons click
+        refreshAllBtn.addEventListener("click", () => {
+            loadDashboardData();
+        });
+
+        // Load all dashboard data
+        async function loadDashboardData() {
+            refreshAllBtn.classList.add("loading");
+            // Set spinner / spinning effect on icon
+            refreshAllBtn.querySelector("i").style.animation = "spin 1s linear infinite";
+            
+            await Promise.all([
+                fetchBookings(),
+                fetchAvailableSlots()
+            ]);
+            
+            refreshAllBtn.querySelector("i").style.animation = "";
+            refreshAllBtn.classList.remove("loading");
+        }
+
+        // Fetch Booked Appointments
+        async function fetchBookings() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(API_URLS.getBookings, { headers });
+                
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+                    throw new Error("Fehler beim Abrufen der Buchungen");
+                }
+                
+                bookings = await response.json();
+                renderBookings();
+            } catch (error) {
+                console.error("Fetch bookings error:", error);
+                bookingsListEl.innerHTML = `<div class="empty-state text-red-500">Konnte gebuchte Termine nicht laden: ${error.message}</div>`;
+            }
+        }
+
+        // Fetch Available Slots (from public API)
+        async function fetchAvailableSlots() {
+            try {
+                const response = await fetch(API_URLS.getAvailableSlots);
+                if (!response.ok) {
+                    throw new Error("Fehler beim Abrufen der freien Slots");
+                }
+                slots = await response.json();
+                renderSlots();
+            } catch (error) {
+                console.error("Fetch slots error:", error);
+                slotsListEl.innerHTML = `<div class="empty-state text-red-500">Konnte freie Slots nicht laden: ${error.message}</div>`;
+            }
+        }
+
+        // Render Booked Appointments
+        function renderBookings() {
+            const query = bookingsSearchInput.value.toLowerCase().trim();
+            const filteredBookings = bookings.filter(b => {
+                return (
+                    b.name.toLowerCase().includes(query) ||
+                    b.email.toLowerCase().includes(query) ||
+                    (b.phone && b.phone.includes(query)) ||
+                    (b.notes && b.notes.toLowerCase().includes(query))
+                );
+            });
+
+            bookingsCountEl.textContent = filteredBookings.length;
+
+            if (filteredBookings.length === 0) {
+                bookingsListEl.innerHTML = `
+                    <div class="empty-state">
+                        ${query ? 'Keine Termine entsprechen Ihrer Suche.' : 'Keine gebuchten Termine vorhanden.'}
+                    </div>
+                `;
+                return;
+            }
+
+            bookingsListEl.innerHTML = "";
+            filteredBookings.forEach(booking => {
+                const item = document.createElement("div");
+                item.className = "booking-item";
+                
+                const typeLabel = booking.type === "psychotherapie" 
+                    ? "Einzeltherapie" 
+                    : "Paartherapie";
+                
+                const typeBadgeClass = booking.type === "psychotherapie"
+                    ? "badge-psychotherapie"
+                    : "badge-paartherapie";
+
+                item.innerHTML = `
+                    <div class="booking-top-bar">
+                        <div>
+                            <span class="badge ${typeBadgeClass}">${typeLabel} (${booking.duration} Min)</span>
+                        </div>
+                        <button type="button" class="btn-cancel" data-id="${booking.id}">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i> Stornieren
+                        </button>
+                    </div>
+
+                    <div class="booking-details-grid">
+                        <div class="detail-line" style="grid-column: span 2;">
+                            <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                            <strong style="font-size: 1.05rem;">${booking.name}</strong>
+                        </div>
+                        <div class="detail-line">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            <span>${formatDateTime(booking.dateTime)}</span>
+                        </div>
+                        <div class="detail-line">
+                            <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
+                            <a href="mailto:${booking.email}" class="underline">${booking.email}</a>
+                        </div>
+                        <div class="detail-line">
+                            <i data-lucide="phone" style="width: 16px; height: 16px;"></i>
+                            <span>${booking.phone ? `<a href="tel:${booking.phone}" class="underline">${booking.phone}</a>` : 'Nicht angegeben'}</span>
+                        </div>
+                    </div>
+                    
+                    ${booking.notes ? `
+                        <div class="booking-notes">
+                            <strong>Anmerkungen:</strong> ${booking.notes}
+                        </div>
+                    ` : ''}
+                `;
+
+                // Add Cancel click handler
+                item.querySelector(".btn-cancel").addEventListener("click", () => {
+                    cancelBooking(booking.id, booking.name, booking.dateTime);
+                });
+
+                bookingsListEl.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Render Available Slots
+        function renderSlots() {
+            slotsCountEl.textContent = slots.length;
+
+            if (slots.length === 0) {
+                slotsListEl.innerHTML = `<div class="empty-state">Keine freigegebenen Slots.</div>`;
+                return;
+            }
+
+            slotsListEl.innerHTML = "";
+            slots.forEach(slot => {
+                const item = document.createElement("div");
+                item.className = "slot-item";
+                
+                const typeLabel = slot.type === "psychotherapie" 
+                    ? "Einzel (50m)" 
+                    : "Paar (90m)";
+                
+                item.innerHTML = `
+                    <div class="slot-info">
+                        <strong style="color: #111827;">${formatDateTime(slot.dateTime)}</strong>
+                        <span class="text-gray-500" style="font-size: 0.8rem;">${typeLabel}</span>
+                    </div>
+                    <button type="button" class="btn-delete" data-id="${slot.id}" title="Slot löschen">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                `;
+
+                // Add delete click handler
+                item.querySelector(".btn-delete").addEventListener("click", () => {
+                    deleteSlot(slot.id, slot.dateTime);
+                });
+
+                slotsListEl.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Search inputs event listener
+        bookingsSearchInput.addEventListener("input", renderBookings);
+
+        // Cancel a booking
+        async function cancelBooking(bookingId, clientName, dateTime) {
+            const formattedTime = formatDateTime(dateTime);
+            if (!confirm(`Möchten Sie den Termin für ${clientName} am ${formattedTime} wirklich stornieren?\nDer Klient erhält eine Benachrichtigung per E-Mail und der Slot wird wieder freigegeben.`)) {
+                return;
+            }
+
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(API_URLS.cancelBooking, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ bookingId })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || "Fehler beim Stornieren des Termins");
+                }
+
+                showToast(`Termin für ${clientName} wurde storniert.`);
+                loadDashboardData();
+            } catch (error) {
+                console.error("Cancel booking error:", error);
+                showToast(error.message, true);
+            }
+        }
+
+        // Create a new availability slot
+        createSlotForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formSubmitBtn = document.getElementById("create-slot-submit");
+            const localDateTime = document.getElementById("slot-datetime").value;
+            const type = document.getElementById("slot-type").value;
+            const duration = Number(document.getElementById("slot-duration").value);
+
+            if (!localDateTime) {
+                showToast("Bitte wählen Sie ein Datum und eine Uhrzeit aus.", true);
+                return;
+            }
+
+            formSubmitBtn.disabled = true;
+            formSubmitBtn.querySelector("span").textContent = "Wird hinzugefügt...";
+
+            try {
+                // Convert picker local datetime to ISO UTC timestamp string
+                const dateTimeISO = formatInputToISO(localDateTime);
+                
+                const headers = await getAuthHeaders();
+                const response = await fetch(API_URLS.createSlot, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        dateTime: dateTimeISO,
+                        type,
+                        duration
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || "Fehler beim Erstellen des Slots");
+                }
+
+                showToast("Verfügbarkeitstermin erfolgreich freigegeben.");
+                createSlotForm.reset();
+                // Set default duration again
+                document.getElementById("slot-duration").value = "50";
+                
+                loadDashboardData();
+            } catch (error) {
+                console.error("Create slot error:", error);
+                showToast(error.message, true);
+            } finally {
+                formSubmitBtn.disabled = false;
+                formSubmitBtn.querySelector("span").textContent = "Termin hinzufügen";
+            }
+        });
+
+        // Delete an unbooked slot
+        async function deleteSlot(slotId, dateTime) {
+            const formattedTime = formatDateTime(dateTime);
+            if (!confirm(`Möchten Sie diesen freien Termin am ${formattedTime} wirklich löschen?`)) {
+                return;
+            }
+
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(API_URLS.deleteSlot, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ slotId })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || "Fehler beim Löschen des Slots");
+                }
+
+                showToast("Freigegebener Slot wurde gelöscht.");
+                loadDashboardData();
+            } catch (error) {
+                console.error("Delete slot error:", error);
+                showToast(error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

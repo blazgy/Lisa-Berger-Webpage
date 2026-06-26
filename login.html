@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Lisa Berger Psychotherapie</title>
+    
+    <!-- SEO & Accessibility -->
+    <meta name="description" content="Admin-Anmeldung für die Praxisverwaltung von Lisa Berger.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.4">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase Compat CDN SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--site--gutter);
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: var(--space--4);
+            border-radius: 24px;
+            border: 1px solid var(--swatch--sage);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-logo {
+            display: block;
+            margin: 0 auto var(--space--3) auto;
+            height: 48px;
+            width: auto;
+        }
+
+        .input-group {
+            margin-bottom: var(--space--2);
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            font-size: var(--text-size--small);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--swatch--dark-text);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.6);
+            font-family: var(--font-family--body);
+            font-size: var(--text-size--small);
+            color: var(--swatch--dark-text);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--swatch--sage);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.2);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--swatch--dark-text);
+        }
+
+        .btn-login {
+            background-color: var(--swatch--sand);
+            color: var(--swatch--dark-text);
+            border: 1px solid var(--swatch--sand);
+            border-radius: 9999px;
+            width: 100%;
+            padding: 0.85rem;
+            font-family: var(--font-family--heading);
+            font-size: var(--text-size--small);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: var(--space--2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-login:hover {
+            background-color: var(--swatch--white);
+            border-color: var(--swatch--sand);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 223, 156, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .alert-error {
+            background: rgba(254, 226, 226, 0.8);
+            border: 1px solid #f87171;
+            color: #b91c1c;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: var(--space--2);
+            font-size: var(--text-size--small);
+            display: none;
+            align-items: flex-start;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .alert-error.active {
+            display: flex;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: var(--text-size--small);
+            color: #6b7280;
+            margin-bottom: var(--space--3);
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--swatch--dark-text);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-off-white text-dark-text">
+    <div class="page_wrap">
+        <!-- Global background container -->
+        <div class="global-background">
+            <div class="paper-texture"></div>
+            <div class="blob blob-1 radius-organic-1 bg-watercolor-rose"></div>
+            <div class="blob blob-2 radius-organic-2 bg-watercolor-peach"></div>
+            <div class="blob blob-3 radius-organic-3 bg-watercolor-lavender"></div>
+            <div class="blob blob-4 radius-organic-4 bg-watercolor-sky"></div>
+        </div>
+
+        <main class="main_wrapper">
+            <div class="login-container">
+                <div class="login-card glass-panel">
+                    <a href="index.html" class="back-link">
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Zurück zur Website
+                    </a>
+
+                    <img src="berger-logo.svg" alt="Lisa Berger" class="login-logo">
+                    
+                    <h1 class="u-text-style-h3 text-dark-text u-text-align-center mb-6">Praxis-Verwaltung</h1>
+
+                    <div id="error-box" class="alert-error">
+                        <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                        <span id="error-message"></span>
+                    </div>
+
+                    <form id="login-form" autocomplete="on">
+                        <div class="input-group">
+                            <label for="email" class="input-label">E-Mail-Adresse</label>
+                            <input type="email" id="email" name="email" autocomplete="username" required placeholder="ihre-email@psychotherapieberger.at" class="input-field" enterkeyhint="next">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="current-password" class="input-label">Passwort</label>
+                            <input type="password" id="current-password" name="password" autocomplete="current-password" required placeholder="••••••••" class="input-field" enterkeyhint="done">
+                            <button type="button" id="toggle-password-btn" class="password-toggle" aria-label="Passwort anzeigen">
+                                <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+                            </button>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn-login">
+                            <span>Anmelden</span>
+                            <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Firebase Configuration
+        // NOTE: Please replace these placeholder values with your actual Firebase project config.
+        const firebaseConfig = {
+            apiKey: "PLACEHOLDER_API_KEY", 
+            authDomain: "lisa-berger-webpage.firebaseapp.com",
+            projectId: "lisa-berger-webpage",
+            storageBucket: "lisa-berger-webpage.appspot.com",
+            messagingSenderId: "PLACEHOLDER_SENDER_ID",
+            appId: "PLACEHOLDER_APP_ID"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+
+        // Elements
+        const loginForm = document.getElementById("login-form");
+        const passwordInput = document.getElementById("current-password");
+        const togglePasswordBtn = document.getElementById("toggle-password-btn");
+        const errorBox = document.getElementById("error-box");
+        const errorMessage = document.getElementById("error-message");
+        const submitBtn = document.getElementById("submit-btn");
+
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener("click", () => {
+            const isPassword = passwordInput.type === "password";
+            passwordInput.type = isPassword ? "text" : "password";
+            
+            // Toggle icon
+            togglePasswordBtn.innerHTML = isPassword 
+                ? `<i data-lucide="eye-off" style="width: 20px; height: 20px;"></i>`
+                : `<i data-lucide="eye" style="width: 20px; height: 20px;"></i>`;
+            lucide.createIcons();
+        });
+
+        // Show error message helper
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.add("active");
+            submitBtn.disabled = false;
+            submitBtn.querySelector("span").textContent = "Anmelden";
+        }
+
+        // Hide error message helper
+        function hideError() {
+            errorBox.classList.remove("active");
+        }
+
+        // Monitor Auth State - if already logged in, redirect to admin.html
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const token = await user.getIdToken();
+                    localStorage.setItem("firebaseIdToken", token);
+                    window.location.href = "admin.html";
+                } catch (err) {
+                    console.error("Error getting ID token:", err);
+                }
+            }
+        });
+
+        // Form Submit Handler
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const email = loginForm.email.value.trim();
+            const password = loginForm.password.value;
+
+            if (!email || !password) {
+                showError("Bitte füllen Sie alle Felder aus.");
+                return;
+            }
+
+            // Disable button and show progress
+            submitBtn.disabled = true;
+            submitBtn.querySelector("span").textContent = "Wird angemeldet...";
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Get ID token and store in local storage
+                const token = await user.getIdToken();
+                localStorage.setItem("firebaseIdToken", token);
+                
+                // Redirect will be handled by onAuthStateChanged, but as backup trigger here:
+                window.location.href = "admin.html";
+            } catch (error) {
+                console.error("Login failed:", error);
+                
+                let message = "Bei der Anmeldung ist ein Fehler aufgetreten.";
+                switch (error.code) {
+                    case "auth/invalid-email":
+                        message = "Die eingegebene E-Mail-Adresse ist ungültig.";
+                        break;
+                    case "auth/user-disabled":
+                        message = "Dieses Benutzerkonto wurde deaktiviert.";
+                        break;
+                    case "auth/user-not-found":
+                    case "auth/wrong-password":
+                    case "auth/invalid-credential":
+                        message = "E-Mail-Adresse oder Passwort ist falsch.";
+                        break;
+                    case "auth/too-many-requests":
+                        message = "Zu viele Fehlversuche. Bitte versuchen Sie es später noch einmal.";
+                        break;
+                }
+                showError(message);
+            }
+        });
+    </script>
+</body>
+</html>
