@@ -332,6 +332,10 @@ a {
     color: var(--swatch--dark-text);
 }
 
+.text-sage {
+    color: var(--swatch--sage);
+}
+
 .text-gray-900 {
     color: #111827;
 }
@@ -1622,12 +1626,25 @@ html.scroll-smooth {
     /* Smooth fading gradient mask on left and right edges (shortened by 50%) */
     mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
+    
+    /* Hardware acceleration / Anti-flicker */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
 }
 
 .marquee-track {
     display: flex;
     width: max-content;
     animation: marquee-scroll 30s linear infinite;
+    
+    /* Hardware acceleration / Anti-flicker */
+    will-change: transform;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 .marquee-group {
