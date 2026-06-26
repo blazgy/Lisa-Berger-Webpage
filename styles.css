@@ -1676,3 +1676,296 @@ html.scroll-smooth {
         animation-duration: 24s;
     }
 }
+
+/* ========================================================= */
+/* CLIENT-SIDE BOOKING MODAL & CALENDAR                      */
+/* ========================================================= */
+
+.booking-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 2rem;
+    border-top: 4px solid var(--swatch--sage);
+    outline: none;
+    padding: 0;
+    display: none;
+    box-sizing: border-box;
+}
+
+.booking-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-dialog::backdrop {
+    background-color: rgba(43, 43, 43, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.booking-dialog-close {
+    position: absolute;
+    top: var(--space--2);
+    right: var(--space--2);
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease, background 0.3s ease;
+    border: none;
+    outline: none;
+}
+
+.booking-dialog-close:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.booking-dialog-content {
+    width: 100%;
+    max-height: calc(90vh - 2rem);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.booking-step {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.booking-step.active {
+    display: block;
+    opacity: 1;
+}
+
+.type-card {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 1.5rem;
+    padding: 2.5rem 1.5rem;
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+    outline: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.type-card:hover, .type-card:focus-visible {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: var(--swatch--sage);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-family--heading);
+    font-size: var(--text-size--small);
+    color: var(--swatch--dark-text);
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.2s ease;
+    padding: 0.5rem 0;
+    outline: none;
+}
+
+.back-btn:hover {
+    transform: translateX(-4px);
+}
+
+.calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    padding: 0.25rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+@media screen and (max-width: 600px) {
+    .calendar-days-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.calendar-day-btn {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 1rem;
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: var(--font-family--heading);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.calendar-day-btn:hover, .calendar-day-btn:focus-visible {
+    background: var(--swatch--white);
+    border-color: var(--swatch--sage);
+    transform: translateY(-2px);
+}
+
+.calendar-day-btn.selected {
+    background: var(--swatch--sage);
+    border-color: var(--swatch--sage);
+    color: var(--swatch--dark-text);
+    font-weight: 600;
+    box-shadow: 0 10px 15px -3px rgba(179, 218, 182, 0.4);
+}
+
+.calendar-day-btn .day-name {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.calendar-day-btn.selected .day-name {
+    color: var(--swatch--dark-text);
+    opacity: 0.8;
+}
+
+.calendar-day-btn .day-num {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.calendar-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 0.25rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+@media screen and (max-width: 600px) {
+    .calendar-slots-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.calendar-slot-btn {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--font-family--heading);
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+    outline: none;
+}
+
+.calendar-slot-btn:hover, .calendar-slot-btn:focus-visible {
+    background: var(--swatch--white);
+    border-color: var(--swatch--sage);
+    transform: translateY(-2px);
+}
+
+.calendar-slot-btn.selected {
+    background: var(--swatch--sage);
+    border-color: var(--swatch--sage);
+    color: var(--swatch--dark-text);
+    font-weight: 600;
+    box-shadow: 0 10px 15px -3px rgba(179, 218, 182, 0.4);
+}
+
+.booking-form {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-input {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(43, 43, 43, 0.15);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-family--body);
+    font-size: 1rem;
+    color: var(--swatch--dark-text);
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    background: var(--swatch--white);
+    border-color: var(--swatch--sage);
+    box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.35);
+}
+
+.form-checkbox {
+    accent-color: var(--swatch--sage);
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+}
+
+.booking-details-box {
+    background: rgba(255, 255, 255, 0.5);
+    border-left: 4px solid var(--swatch--sage);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    font-family: var(--font-family--body);
+    font-size: var(--text-size--small);
+}
+
+.no-slots-message {
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid var(--swatch--sand);
+}
+
+@media screen and (max-width: 991px) {
+    .calendar-days-sidebar, .calendar-slots-sidebar {
+        grid-column: span 1 / span 1 !important;
+    }
+}
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.booking-dialog[open] {
+    animation: dialogFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

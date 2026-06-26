@@ -325,6 +325,26 @@
                             </div>
 
                             <div class="u-flex pt-4 gap-lg-grid" data-direction="vertical">
+                                <!-- Online Booking -->
+                                <button id="open-booking-btn" type="button"
+                                    class="rounded-3xl u-flex group glass-panel p-8 border-t-green transition-all hover-lift contact-link"
+                                    data-align="center" style="background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.5); text-align: left; width: 100%; cursor: pointer; font-family: inherit;">
+                                    <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg">
+                                        <i data-lucide="calendar"></i>
+                                    </div>
+                                    <div class="u-flex" data-direction="vertical" style="min-width: 0; flex: 1;">
+                                        <span
+                                            class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-1 label-xs">Terminbuchung</span>
+                                        <span class="u-text-style-main u-weight-medium text-dark-text">Jetzt online buchen</span>
+                                        <span class="text-gray-500 mt-2"
+                                            style="font-size: 0.85rem; line-height: 1.4; word-break: break-word; overflow-wrap: anywhere;">Sichern Sie sich direkt online Ihren Wunschtermin für ein Erstgespräch.</span>
+                                    </div>
+                                    <div class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all"
+                                        style="margin-left: auto;">
+                                        <i data-lucide="arrow-right" class="icon-sm"></i>
+                                    </div>
+                                </button>
+
                                 <!-- Email -->
                                 <a href="mailto:info@psychotherapieberger.at"
                                     class="rounded-3xl u-flex group glass-panel p-8 border-t-yellow transition-all hover-lift contact-link"
@@ -592,6 +612,7 @@
                 <p>Die Gründe für das Aufsuchen einer Psychotherapie können vielseitig sein. Ob Ängste, Depressionen,
                     Lebenskrisen oder andere Herausforderungen - in der Therapie widmen wir uns Ihren ganz persönlichen
                     Themen.</p>
+                <button type="button" class="button-primary open-booking-from-modal mt-6" style="display: block; margin-inline: auto;">Termin online buchen</button>
             </div>
         </div>
     </div>
@@ -614,6 +635,7 @@
                     gemeinsam zu klären, was für Sie persönlich und für Ihre Beziehung/en stimmig ist.</p>
                 <p>Ich biete Paar- und Partner*innentherapie für Menschen in allen Beziehungsformen an – unabhängig von
                     Geschlechtsidentität, sexueller Orientierung oder gelebtem Beziehungsmodell.</p>
+                <button type="button" class="button-primary open-booking-from-modal mt-6" style="display: block; margin-inline: auto;">Termin online buchen</button>
             </div>
         </div>
     </div>
@@ -713,6 +735,516 @@
                 if (datenschutzContent) datenschutzContent.classList.remove('active');
             });
         });
+    </script>
+
+    <!-- Calendar Booking Modal -->
+    <dialog id="booking-dialog" closedby="any" class="booking-dialog rounded-3xl bg-white border-t-green shadow-2xl" aria-labelledby="booking-dialog-title">
+        <button id="close-booking-dialog" type="button"
+            class="booking-dialog-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
+            <i data-lucide="x" class="icon-sm"></i>
+        </button>
+        <div class="booking-dialog-content u-padding-inline-4 u-padding-block-5">
+            <h2 id="booking-dialog-title" class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight text-center">Termin online buchen</h2>
+            
+            <!-- Step 1: Select Therapy Type -->
+            <div id="booking-step-1" class="booking-step active">
+                <p class="u-text-style-main text-gray-700 mb-6 text-center">Bitte wählen Sie die gewünschte Therapieform aus:</p>
+                <div class="u-grid gap-md mb-6" data-large-columns="2" data-medium-columns="1" data-small-columns="1">
+                    <button type="button" class="type-card rounded-2xl glass-panel p-6 shadow-sm border-white-60 hover-lift text-center group cursor-pointer" data-type="psychotherapie">
+                        <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg mx-auto mb-4 group-hover-scale transition-all">
+                            <i data-lucide="user"></i>
+                        </div>
+                        <h3 class="u-text-style-h3 u-weight-medium text-dark-text m-0 mb-2">Einzelpsychotherapie</h3>
+                        <p class="u-text-style-small text-gray-500 mb-0">50 Minuten &bull; 80 €</p>
+                    </button>
+                    <button type="button" class="type-card rounded-2xl glass-panel p-6 shadow-sm border-white-60 hover-lift text-center group cursor-pointer" data-type="paartherapie">
+                        <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg mx-auto mb-4 group-hover-scale transition-all">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <h3 class="u-text-style-h3 u-weight-medium text-dark-text m-0 mb-2">Paartherapie</h3>
+                        <p class="u-text-style-small text-gray-500 mb-0">90 Minuten &bull; 180 €</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Select Date & Time -->
+            <div id="booking-step-2" class="booking-step">
+                <button type="button" class="back-btn mb-4 u-flex gap-sm" data-align="center">
+                    <i data-lucide="arrow-left" class="icon-sm"></i> Zurück
+                </button>
+                <p class="u-text-style-main text-gray-700 mb-6 text-center">Wählen Sie einen freien Termin aus:</p>
+                
+                <div class="calendar-container u-grid gap-lg-grid" data-large-columns="12" data-medium-columns="1">
+                    <!-- Left: Calendar days list -->
+                    <div class="calendar-days-sidebar col-span-7">
+                        <h4 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-3">Verfügbare Tage</h4>
+                        <div id="calendar-days-grid" class="calendar-days-grid">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                    <!-- Right: Time slots for selected day -->
+                    <div class="calendar-slots-sidebar col-span-5">
+                        <h4 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-3">Freie Uhrzeiten</h4>
+                        <div id="calendar-slots-grid" class="calendar-slots-grid">
+                            <!-- Rendered by JS -->
+                            <p class="text-gray-500 u-text-style-small italic">Bitte wählen Sie zuerst einen Tag aus.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="no-slots-message" class="no-slots-message hidden text-center p-8 glass-panel rounded-2xl border-t-yellow">
+                    <i data-lucide="calendar-off" class="mx-auto mb-4 text-gray-400" style="width: 48px; height: 48px;"></i>
+                    <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-2">Keine Termine online verfügbar</h4>
+                    <p class="u-text-style-small text-gray-600 mb-4">Aktuell sind online leider keine freien Termine für diese Therapieform eingetragen.</p>
+                    <p class="u-text-style-small text-gray-600">Bitte kontaktieren Sie mich direkt per E-Mail unter <a href="mailto:info@psychotherapieberger.at" class="text-dark-text u-weight-medium underline">info@psychotherapieberger.at</a> oder telefonisch, um freie Kapazitäten zu erfragen.</p>
+                </div>
+            </div>
+
+            <!-- Step 3: Enter Personal Details -->
+            <div id="booking-step-3" class="booking-step">
+                <button type="button" class="back-btn mb-4 u-flex gap-sm" data-align="center">
+                    <i data-lucide="arrow-left" class="icon-sm"></i> Zurück
+                </button>
+                <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-2 text-center">Ihre Kontaktdaten</h4>
+                <p class="u-text-style-small text-gray-500 mb-6 text-center" id="selected-summary"></p>
+                
+                <form id="booking-form" class="booking-form u-flex" data-direction="vertical" style="gap: 1.25rem;">
+                    <input type="hidden" id="selected-slot-id" name="slotId" required>
+                    
+                    <div class="form-group u-flex" data-direction="vertical" style="gap: 0.5rem;">
+                        <label for="booking-name" class="u-text-style-small u-weight-medium text-dark-text">Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="booking-name" name="name" required placeholder="Vor- und Nachname" class="form-input">
+                    </div>
+                    
+                    <div class="form-group u-flex" data-direction="vertical" style="gap: 0.5rem;">
+                        <label for="booking-email" class="u-text-style-small u-weight-medium text-dark-text">E-Mail-Adresse <span class="text-red-500">*</span></label>
+                        <input type="email" id="booking-email" name="email" required placeholder="name@beispiel.com" class="form-input">
+                    </div>
+                    
+                    <div class="form-group u-flex" data-direction="vertical" style="gap: 0.5rem;">
+                        <label for="booking-phone" class="u-text-style-small u-weight-medium text-dark-text">Telefonnummer</label>
+                        <input type="tel" id="booking-phone" name="phone" placeholder="+43 660 1234567" class="form-input">
+                    </div>
+                    
+                    <div class="form-group u-flex" data-direction="vertical" style="gap: 0.5rem;">
+                        <label for="booking-notes" class="u-text-style-small u-weight-medium text-dark-text">Anmerkungen (optional)</label>
+                        <textarea id="booking-notes" name="notes" rows="3" placeholder="Besondere Wünsche, Themen oder Fragen..." class="form-input no-resize"></textarea>
+                    </div>
+                    
+                    <div class="form-group-checkbox u-flex gap-sm" data-align="flex-start">
+                        <input type="checkbox" id="booking-gdpr" required class="form-checkbox" style="margin-top: 0.3rem;">
+                        <label for="booking-gdpr" class="u-text-style-small text-gray-600 leading-relaxed">
+                            Ich willige in die Verarbeitung meiner Daten zur Terminvereinbarung ein. Es gilt die <button type="button" id="booking-datenschutz-link" class="text-dark-text u-weight-medium underline" style="background: none; border: none; padding: 0; font-family: inherit; font-size: inherit; cursor: pointer;">Datenschutzerklärung</button>. <span class="text-red-500">*</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" id="submit-booking-btn" class="button-primary u-weight-medium mt-4 w-full" style="padding: 0.8rem; border-radius: 9999px;">
+                        Kostenpflichtig buchen
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 4: Success / Confirmation -->
+            <div id="booking-step-4" class="booking-step text-center">
+                <div class="icon-circle bg-white shadow-sm text-green-500 icon-circle-lg mx-auto mb-6 border-t-green" style="color: #10B981;">
+                    <i data-lucide="check-circle" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h3 class="u-text-style-h3 u-weight-medium text-dark-text mb-4">Termin erfolgreich gebucht!</h3>
+                <p class="u-text-style-main text-gray-700 mb-6">Vielen Dank für Ihre Buchung. Wir haben Ihnen eine Bestätigungs-E-Mail mit allen Details gesendet.</p>
+                
+                <div class="booking-details-box glass-panel rounded-2xl p-6 mb-8 text-left">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <button type="button" id="close-success-btn" class="button-primary u-weight-medium" style="padding: 0.6em 2em; border-radius: 9999px;">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // Booking system configuration
+        const BOOKING_API_URLS = {
+            getAvailableSlots: 'https://getavailableslots-uc.a.run.app', // Placeholder - user will replace
+            bookAppointment: 'https://bookappointment-uc.a.run.app'    // Placeholder - user will replace
+        };
+
+        (function() {
+            let allSlots = [];
+            let filteredSlots = [];
+            let selectedType = '';
+            let selectedDate = '';
+            let selectedSlot = null;
+
+            // Elements
+            const dialog = document.getElementById('booking-dialog');
+            const closeBtn = document.getElementById('close-booking-dialog');
+            const typeCards = document.querySelectorAll('.type-card');
+            const daysGrid = document.getElementById('calendar-days-grid');
+            const slotsGrid = document.getElementById('calendar-slots-grid');
+            const noSlotsMsg = document.getElementById('no-slots-message');
+            const bookingForm = document.getElementById('booking-form');
+            const selectedSlotInput = document.getElementById('selected-slot-id');
+            const summaryText = document.getElementById('selected-summary');
+            const closeSuccessBtn = document.getElementById('close-success-btn');
+            const datenschutzLink = document.getElementById('booking-datenschutz-link');
+            const submitBtn = document.getElementById('submit-booking-btn');
+
+            // Steps
+            const steps = {
+                1: document.getElementById('booking-step-1'),
+                2: document.getElementById('booking-step-2'),
+                3: document.getElementById('booking-step-3'),
+                4: document.getElementById('booking-step-4')
+            };
+
+            // Back buttons
+            document.querySelectorAll('.booking-step .back-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (steps[3].classList.contains('active')) {
+                        showStep(2);
+                    } else if (steps[2].classList.contains('active')) {
+                        showStep(1);
+                    }
+                });
+            });
+
+            // Helper to transition steps
+            function showStep(stepNum) {
+                Object.values(steps).forEach(step => step.classList.remove('active'));
+                steps[stepNum].classList.add('active');
+                
+                // Re-init lucide icons on render
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }
+
+            // Reset flow
+            function resetBookingFlow() {
+                selectedType = '';
+                selectedDate = '';
+                selectedSlot = null;
+                bookingForm.reset();
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Kostenpflichtig buchen';
+                showStep(1);
+            }
+
+            // Close dialog handler
+            function closeDialog() {
+                dialog.close();
+                resetBookingFlow();
+            }
+
+            closeBtn.addEventListener('click', closeDialog);
+            closeSuccessBtn.addEventListener('click', closeDialog);
+
+            // Fallback light-dismiss for Safari/unsupporting browsers
+            if (!('closedBy' in HTMLDialogElement.prototype)) {
+                dialog.addEventListener('click', (event) => {
+                    if (event.target !== dialog) return;
+                    const rect = dialog.getBoundingClientRect();
+                    const isDialogContent = (
+                        rect.top <= event.clientY &&
+                        event.clientY <= rect.top + rect.height &&
+                        rect.left <= event.clientX &&
+                        event.clientX <= rect.left + rect.width
+                    );
+                    if (!isDialogContent) {
+                        closeDialog();
+                    }
+                });
+            }
+
+            // Open booking dialog
+            function openBookingModal() {
+                dialog.showModal();
+                fetchSlots();
+            }
+
+            // Hook up nav-island CTA and Kontakt card trigger
+            const navCta = document.querySelector('.nav-cta-btn');
+            if (navCta) {
+                navCta.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openBookingModal();
+                });
+            }
+
+            const openBookingBtn = document.getElementById('open-booking-btn');
+            if (openBookingBtn) {
+                openBookingBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openBookingModal();
+                });
+            }
+
+            // Hook up triggers from information/service modals
+            document.querySelectorAll('.open-booking-from-modal').forEach((btn, idx) => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Close the service description modal
+                    if (typeof closeAllModals === 'function') {
+                        closeAllModals();
+                    } else {
+                        const overlay = document.getElementById('service-modal-overlay');
+                        const modals = document.querySelectorAll('.service-modal');
+                        if (overlay) overlay.classList.remove('active');
+                        if (modals) modals.forEach(m => m.classList.remove('active'));
+                        document.body.style.overflow = '';
+                    }
+
+                    // Open booking dialog and preselect type
+                    openBookingModal();
+                    selectedType = idx === 0 ? 'psychotherapie' : 'paartherapie';
+                    
+                    // Wait a tiny bit for fetchSlots to load, then render calendar filtered
+                    setTimeout(() => {
+                        renderCalendar();
+                        showStep(2);
+                    }, 100);
+                });
+            });
+
+            // Trigger datenschutz accordion within the page if clicked inside booking form
+            if (datenschutzLink) {
+                datenschutzLink.addEventListener('click', () => {
+                    closeDialog();
+                    const datenschutzBtn = document.getElementById('datenschutz-btn');
+                    const datenschutzContent = document.getElementById('datenschutz-content');
+                    const impressumContent = document.getElementById('impressum-content');
+                    if (datenschutzBtn && datenschutzContent) {
+                        if (!datenschutzContent.classList.contains('active')) {
+                            datenschutzContent.classList.add('active');
+                            if (impressumContent) impressumContent.classList.remove('active');
+                            setTimeout(() => {
+                                datenschutzContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 100);
+                        }
+                    }
+                });
+            }
+
+            // Type selection cards listener
+            typeCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    selectedType = card.getAttribute('data-type');
+                    renderCalendar();
+                    showStep(2);
+                });
+            });
+
+            // Fetch available slots from Cloud Run API
+            async function fetchSlots() {
+                daysGrid.innerHTML = '<p class="text-gray-500 u-text-style-small italic col-span-12 text-center">Lade verfügbare Termine...</p>';
+                slotsGrid.innerHTML = '';
+                noSlotsMsg.classList.add('hidden');
+                document.querySelector('.calendar-container').classList.remove('hidden');
+                
+                try {
+                    const response = await fetch(BOOKING_API_URLS.getAvailableSlots);
+                    if (!response.ok) {
+                        throw new Error('Fehler beim Laden der Termine');
+                    }
+                    allSlots = await response.json();
+                    
+                    // If we already pre-selected type (via service modals), render right away
+                    if (selectedType) {
+                        renderCalendar();
+                    }
+                } catch (error) {
+                    console.error('Fetch slots error:', error);
+                    daysGrid.innerHTML = `<p class="text-red-500 u-text-style-small col-span-12 text-center">Termine konnten nicht geladen werden. Bitte versuchen Sie es später noch einmal oder kontaktieren Sie mich direkt.</p>`;
+                }
+            }
+
+            // Group and render calendar based on selectedType
+            function renderCalendar() {
+                filteredSlots = allSlots.filter(slot => slot.type === selectedType);
+                
+                if (filteredSlots.length === 0) {
+                    document.querySelector('.calendar-container').classList.add('hidden');
+                    noSlotsMsg.classList.remove('hidden');
+                    return;
+                }
+
+                document.querySelector('.calendar-container').classList.remove('hidden');
+                noSlotsMsg.classList.add('hidden');
+
+                const grouped = {};
+                filteredSlots.forEach(slot => {
+                    const dateStr = slot.dateTime.split('T')[0];
+                    if (!grouped[dateStr]) {
+                        grouped[dateStr] = [];
+                    }
+                    grouped[dateStr].push(slot);
+                });
+
+                const sortedDates = Object.keys(grouped).sort();
+                
+                daysGrid.innerHTML = '';
+                sortedDates.forEach((dateStr, idx) => {
+                    const dateObj = new Date(dateStr + 'T00:00:00');
+                    const dayName = dateObj.toLocaleDateString('de-AT', { weekday: 'short' });
+                    const dayNum = dateObj.toLocaleDateString('de-AT', { day: 'numeric' });
+                    
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'calendar-day-btn';
+                    btn.innerHTML = `
+                        <span class="day-name">${dayName}</span>
+                        <span class="day-num">${dayNum}</span>
+                    `;
+                    
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.calendar-day-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        selectedDate = dateStr;
+                        renderTimeSlots(grouped[dateStr]);
+                    });
+
+                    daysGrid.appendChild(btn);
+
+                    if (idx === 0) {
+                        btn.click();
+                    }
+                });
+            }
+
+            // Render time slots for selected day
+            function renderTimeSlots(slots) {
+                slotsGrid.innerHTML = '';
+                
+                slots.forEach(slot => {
+                    const dateObj = new Date(slot.dateTime);
+                    const timeStr = dateObj.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vienna' });
+                    
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'calendar-slot-btn';
+                    btn.textContent = `${timeStr} Uhr`;
+                    
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.calendar-slot-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        selectedSlot = slot;
+                        proceedToDetailsStep();
+                    });
+
+                    slotsGrid.appendChild(btn);
+                });
+            }
+
+            // Proceed to Step 3 Form details
+            function proceedToDetailsStep() {
+                if (!selectedSlot) return;
+
+                selectedSlotInput.value = selectedSlot.id;
+
+                const dateObj = new Date(selectedSlot.dateTime);
+                const formattedDate = dateObj.toLocaleDateString('de-AT', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                const formattedTime = dateObj.toLocaleTimeString('de-AT', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Europe/Vienna'
+                });
+
+                const typeLabel = selectedSlot.type === 'psychotherapie' 
+                    ? 'Einzelpsychotherapie (50 Min)' 
+                    : 'Paartherapie (90 Min)';
+                
+                summaryText.innerHTML = `Ausgewählt: <strong>${typeLabel}</strong><br>am <strong>${formattedDate} um ${formattedTime} Uhr</strong>`;
+
+                showStep(3);
+            }
+
+            // Handle form submission
+            bookingForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!selectedSlotInput.value) {
+                    alert('Bitte wählen Sie zuerst einen Termin aus.');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Wird gebucht...';
+
+                const formData = new FormData(bookingForm);
+                const payload = {
+                    slotId: formData.get('slotId'),
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone') || null,
+                    notes: formData.get('notes') || null
+                };
+
+                try {
+                    const response = await fetch(BOOKING_API_URLS.bookAppointment, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error || 'Der Termin konnte nicht gebucht werden.');
+                    }
+
+                    const result = await response.json();
+                    showSuccessScreen(result.booking);
+                } catch (error) {
+                    console.error('Booking submission error:', error);
+                    alert(`Buchungsfehler: ${error.message || 'Bitte versuchen Sie es erneut.'}`);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Kostenpflichtig buchen';
+                }
+            });
+
+            // Populate success screen details
+            function showSuccessScreen(booking) {
+                const detailsBox = document.querySelector('.booking-details-box');
+                
+                const dateObj = new Date(selectedSlot.dateTime);
+                const formattedDate = dateObj.toLocaleDateString('de-AT', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                const formattedTime = dateObj.toLocaleTimeString('de-AT', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Europe/Vienna'
+                });
+
+                const typeLabel = selectedSlot.type === 'psychotherapie' 
+                    ? 'Einzelpsychotherapie (50 Min)' 
+                    : 'Paartherapie (90 Min)';
+                
+                detailsBox.innerHTML = `
+                    <strong>Klient:in:</strong> ${bookingForm.name.value}<br>
+                    <strong>E-Mail:</strong> ${bookingForm.email.value}<br>
+                    <strong>Therapieform:</strong> ${typeLabel}<br>
+                    <strong>Termin:</strong> ${formattedDate} um ${formattedTime} Uhr<br>
+                    <strong>Praxisadresse:</strong> Stadtplatz 36/25, 4840 Vöcklabruck (Galerie Burgstall, 3. Stock)
+                `;
+
+                showStep(4);
+            }
+        })();
     </script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "175595f3d9af44c1b7a6c2ea6a5c6384"}'></script>
