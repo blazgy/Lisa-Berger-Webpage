@@ -3,7 +3,7 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
 const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
 exports.ping = onRequest((req, res) => {
   res.status(200).send("pong");
@@ -37,7 +37,7 @@ exports.getAvailableSlots = onRequest({ cors: true }, async (req, res) => {
 });
 
 // Book a specific slot inside a Transaction
-exports.bookAppointment = onRequest({ cors: true }, async (req, res) => {
+exports.bookAppointment = onRequest({ cors: true, secrets: ["RESEND_API_KEY"] }, async (req, res) => {
   const { slotId, name, email, phone, notes } = req.body;
   
   if (!slotId || !name || !email) {
@@ -261,7 +261,7 @@ exports.admin = {
     });
   }),
 
-  cancelBooking: onRequest({ cors: true }, async (req, res) => {
+  cancelBooking: onRequest({ cors: true, secrets: ["RESEND_API_KEY"] }, async (req, res) => {
     verifyAdmin(req, res, async () => {
       try {
         const { bookingId } = req.body;

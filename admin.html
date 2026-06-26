@@ -506,21 +506,22 @@
 
         // API Configuration: Replace placeholders with your deployed URLs if different
         const API_URLS = {
-            getAvailableSlots: 'https://getavailableslots-uc.a.run.app',
-            getBookings: 'https://admin-getbookings-uc.a.run.app',
-            cancelBooking: 'https://admin-cancelbooking-uc.a.run.app',
-            createSlot: 'https://admin-createslot-uc.a.run.app',
-            deleteSlot: 'https://admin-deleteslot-uc.a.run.app'
+            getAvailableSlots: 'https://us-central1-lisa-berger-webpage.cloudfunctions.net/getAvailableSlots',
+            getBookings: 'https://us-central1-lisa-berger-webpage.cloudfunctions.net/admin-getBookings',
+            cancelBooking: 'https://us-central1-lisa-berger-webpage.cloudfunctions.net/admin-cancelBooking',
+            createSlot: 'https://us-central1-lisa-berger-webpage.cloudfunctions.net/admin-createSlot',
+            deleteSlot: 'https://us-central1-lisa-berger-webpage.cloudfunctions.net/admin-deleteSlot'
         };
 
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "PLACEHOLDER_API_KEY", 
+            apiKey: "AIzaSyDFQ1L9JS9VH-RNVStOK2LQqx_81LJE6lg", 
             authDomain: "lisa-berger-webpage.firebaseapp.com",
             projectId: "lisa-berger-webpage",
-            storageBucket: "lisa-berger-webpage.appspot.com",
-            messagingSenderId: "PLACEHOLDER_SENDER_ID",
-            appId: "PLACEHOLDER_APP_ID"
+            storageBucket: "lisa-berger-webpage.firebasestorage.app",
+            messagingSenderId: "544105857949",
+            appId: "1:544105857949:web:b0dbf880c86642054ca574",
+            measurementId: "G-1XEMX5QQ2V"
         };
 
         // Initialize Firebase
