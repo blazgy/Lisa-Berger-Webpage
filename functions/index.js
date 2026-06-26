@@ -2,6 +2,8 @@ const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 exports.ping = onRequest((req, res) => {
   res.status(200).send("pong");
@@ -85,7 +87,60 @@ exports.bookAppointment = onRequest({ cors: true }, async (req, res) => {
       };
     });
 
-    // TODO: Send emails in next task
+    try {
+      // Format DateTime for humans (Europe/Vienna timezone)
+      const formattedDate = new Date(result.dateTime).toLocaleString("de-AT", {
+        timeZone: "Europe/Vienna",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      // 1. Send confirmation to Client
+      await resend.emails.send({
+        from: "Lisa Berger Psychotherapie <info@psychotherapieberger.at>",
+        to: email,
+        subject: "Terminbestätigung Psychotherapie - Lisa Berger",
+        html: `
+          <h2>Terminbestätigung</h2>
+          <p>Sehr geehrte(r) ${name},</p>
+          <p>Ihr Termin wurde erfolgreich vereinbart:</p>
+          <ul>
+            <li><strong>Art des Termins:</strong> ${result.type === "psychotherapie" ? "Einzelpsychotherapie (50 Min)" : "Paartherapie (90 Min)"}</li>
+            <li><strong>Datum & Uhrzeit:</strong> ${formattedDate} Uhr</li>
+            <li><strong>Praxisadresse:</strong> Stadtplatz 36/25, 4840 Vöcklabruck (Galerie Burgstall, 3. Stock)</li>
+          </ul>
+          <p>Falls Sie den Termin absagen müssen, bitte ich Sie, dies mindestens 48 Stunden vorher zu tun.</p>
+          <br>
+          <p>Mit freundlichen Grüßen,<br>Lisa Berger, MA</p>
+        `
+      });
+
+      // 2. Send notification to Therapist
+      await resend.emails.send({
+        from: "Praxis Website <info@psychotherapieberger.at>",
+        to: "info@psychotherapieberger.at",
+        subject: `Neue Buchung: ${name} (${result.type})`,
+        html: `
+          <h3>Neue Online-Terminbuchung</h3>
+          <p>Ein neuer Termin wurde gebucht:</p>
+          <ul>
+            <li><strong>Klient:</strong> ${name}</li>
+            <li><strong>E-Mail:</strong> ${email}</li>
+            <li><strong>Telefon:</strong> ${phone || "Nicht angegeben"}</li>
+            <li><strong>Termintyp:</strong> ${result.type}</li>
+            <li><strong>Terminzeit:</strong> ${formattedDate} Uhr</li>
+            <li><strong>Anmerkungen:</strong> ${notes || "Keine"}</li>
+          </ul>
+        `
+      });
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
+
     res.status(200).json({ success: true, booking: result });
   } catch (error) {
     res.status(409).json({ error: error.message });
