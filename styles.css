@@ -1607,3 +1607,45 @@ html.scroll-smooth {
     /* Increased to allow full expansion of longer texts */
     opacity: 1;
 }
+
+/* ========================================================= */
+/* TEXT MARQUEE                                              */
+/* ========================================================= */
+
+.marquee-container {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    padding-block: 0.75rem;
+    margin-bottom: 2rem;
+    pointer-events: none;
+    /* Smooth fading gradient mask on left and right edges (shortened by 50%) */
+    mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
+}
+
+.marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 30s linear infinite;
+}
+
+.marquee-group {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    padding-right: 3rem;
+}
+
+.marquee-group span {
+    white-space: nowrap;
+}
+
+@keyframes marquee-scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
