@@ -1666,3 +1666,9 @@ html.scroll-smooth {
         transform: translate3d(-50%, 0, 0);
     }
 }
+
+@media screen and (max-width: 767px) {
+    .marquee-track {
+        animation-duration: 24s;
+    }
+}
