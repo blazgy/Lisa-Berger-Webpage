@@ -1,0 +1,14 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Lisa Berger Webpage",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "resend": "^3.0.0"
+  },
+  "engines": {
+    "node": "18"
+  }
+}
