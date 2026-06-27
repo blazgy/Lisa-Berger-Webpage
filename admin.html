@@ -72,7 +72,7 @@
         }
 
         .card-header-sage {
-            border-bottom: 2px solid var(--swatch--sage);
+            border-bottom: 2px solid var(--swatch--sand);
             padding-bottom: 0.75rem;
             margin-bottom: var(--space--2);
             display: flex;
@@ -102,9 +102,9 @@
 
         .form-select:focus, .form-input-date:focus {
             outline: none;
-            border-color: var(--swatch--sage);
+            border-color: var(--swatch--sand);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.2);
+            box-shadow: 0 0 0 3px rgba(245, 223, 156, 0.2);
         }
 
         .form-row {
@@ -134,7 +134,7 @@
             transform: translateY(-2px);
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.03);
-            border-color: var(--swatch--sage);
+            border-color: var(--swatch--sand);
         }
 
         .booking-top-bar {
@@ -167,8 +167,8 @@
         }
 
         .booking-notes {
-            background: rgba(179, 218, 182, 0.1);
-            border-left: 3px solid var(--swatch--sage);
+            background: rgba(245, 223, 156, 0.1);
+            border-left: 3px solid var(--swatch--sand);
             padding: 8px 12px;
             border-radius: 4px 12px 12px 4px;
             font-size: var(--text-size--small);
@@ -188,9 +188,9 @@
         }
 
         .badge-psychotherapie {
-            background-color: rgba(179, 218, 182, 0.25);
-            color: #27562a;
-            border: 1px solid rgba(179, 218, 182, 0.5);
+            background-color: rgba(245, 223, 156, 0.25);
+            color: #604a11;
+            border: 1px solid rgba(245, 223, 156, 0.5);
         }
 
         .badge-paartherapie {
@@ -244,13 +244,15 @@
 
         .slot-item:hover {
             background: rgba(255, 255, 255, 0.85);
-            border-color: var(--swatch--sage);
+            border-color: var(--swatch--sand);
         }
 
         .slot-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
         }
 
         .btn-delete {
@@ -264,6 +266,8 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .btn-delete:hover {
@@ -284,7 +288,7 @@
             bottom: 24px;
             right: 24px;
             background: white;
-            border-left: 4px solid var(--swatch--sage);
+            border-left: 4px solid var(--swatch--sand);
             border-radius: 8px;
             padding: 16px var(--space--2);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -323,9 +327,9 @@
 
         .search-input:focus {
             outline: none;
-            border-color: var(--swatch--sage);
+            border-color: var(--swatch--sand);
             background: white;
-            box-shadow: 0 0 0 3px rgba(179, 218, 182, 0.2);
+            box-shadow: 0 0 0 3px rgba(245, 223, 156, 0.2);
         }
 
         .search-icon {
@@ -351,8 +355,139 @@
 
         .btn-refresh:hover {
             background: white;
-            border-color: var(--swatch--sage);
+            border-color: var(--swatch--sand);
             transform: rotate(45deg);
+        }
+
+        .text-sage {
+            color: var(--swatch--sand) !important;
+        }
+
+        /* Admin Calendar Grid */
+        .admin-calendar-wrapper {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 1.25rem;
+            padding: 1rem;
+        }
+
+        .calendar-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.35);
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-month-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--swatch--dark-text);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-month-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.1);
+        }
+
+        .nav-month-btn:disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            background: none;
+        }
+
+        .calendar-weekdays-header div {
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-align: center;
+            padding: 0.25rem 0;
+        }
+
+        .calendar-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr) !important;
+            gap: 0.35rem;
+            padding: 0.25rem 0;
+        }
+
+        .calendar-day-btn {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: var(--font-family--heading);
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            aspect-ratio: 1;
+            width: 100%;
+        }
+
+        .calendar-day-btn.empty-cell {
+            background: transparent !important;
+            border: none !important;
+            cursor: default !important;
+            pointer-events: none !important;
+            box-shadow: none !important;
+        }
+
+        .calendar-day-btn.unavailable {
+            background: rgba(243, 244, 246, 0.2) !important;
+            color: #9ca3af !important;
+            border-color: rgba(229, 231, 235, 0.25) !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
+        .calendar-day-btn.available {
+            background: rgba(245, 223, 156, 0.15) !important; /* Sand background */
+            border-color: rgba(245, 223, 156, 0.7) !important; /* Sand border */
+            color: #92400e !important; /* Dark amber text */
+            cursor: pointer !important;
+        }
+
+        .calendar-day-btn.available:hover, .calendar-day-btn.available:focus-visible {
+            background: rgba(245, 223, 156, 0.35) !important;
+            border-color: var(--swatch--sand) !important;
+            transform: translateY(-2px);
+        }
+
+        .calendar-day-btn.selected {
+            background: var(--swatch--sand) !important;
+            border-color: var(--swatch--sand) !important;
+            color: var(--swatch--dark-text) !important;
+            font-weight: 700 !important;
+            box-shadow: 0 8px 12px -3px rgba(245, 223, 156, 0.5) !important;
+        }
+
+        .badge-frei {
+            background-color: rgba(16, 185, 129, 0.12);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .badge-gebucht {
+            background-color: rgba(239, 68, 68, 0.12);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.25);
         }
     </style>
 </head>
@@ -402,94 +537,103 @@
                     <button type="button" id="refresh-all-btn" class="btn-refresh" title="Daten aktualisieren">
                         <i data-lucide="refresh-cw" style="width: 20px; height: 20px;"></i>
                     </button>
-                </div>
-
-                <!-- Dashboard Grid -->
-                <div class="u-grid" data-large-columns="12" data-medium-columns="1">
+                </div>                <!-- Dashboard Stack (Ordered Vertically) -->
+                <div class="u-flex" data-direction="vertical" style="gap: var(--space--3); max-width: 850px; margin: 0 auto; width: 100%;">
                     
-                    <!-- Left: Upcoming Appointments (Col-span-7) -->
-                    <section class="col-span-7">
-                        <div class="dashboard-card glass-panel">
-                            <div class="card-header-sage">
-                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
-                                    <i data-lucide="calendar-check" class="text-sage" style="width: 24px; height: 24px;"></i> 
-                                    Gebuchte Termine
-                                </h2>
-                                <span id="bookings-count" class="badge badge-psychotherapie">0</span>
-                            </div>
-
-                            <div class="search-bar">
-                                <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
-                                <input type="text" id="bookings-search" placeholder="Nach Klient:in, E-Mail oder Anmerkungen suchen..." class="search-input">
-                            </div>
-
-                            <div id="bookings-list" class="booking-list">
-                                <!-- Bookings populated by JS -->
-                                <div class="empty-state">Lade Termine...</div>
-                            </div>
+                    <!-- Card 1: Gebuchte Termine -->
+                    <div class="dashboard-card glass-panel" style="width: 100%;">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="calendar-check" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                Gebuchte Termine
+                            </h2>
+                            <span id="bookings-count" class="badge badge-psychotherapie">0</span>
                         </div>
-                    </section>
 
-                    <!-- Right: Manage Availability & Slots (Col-span-5) -->
-                    <section class="col-span-5 u-flex" data-direction="vertical" style="gap: var(--space--3);">
-                        
-                        <!-- Create Available Slot Form -->
-                        <div class="dashboard-card glass-panel">
-                            <div class="card-header-sage">
-                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
-                                    <i data-lucide="plus-circle" class="text-sage" style="width: 24px; height: 24px;"></i> 
-                                    Termin freigeben
-                                </h2>
+                        <div class="search-bar">
+                            <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+                            <input type="text" id="bookings-search" placeholder="Nach Klient:in, E-Mail oder Anmerkungen suchen..." class="search-input">
+                        </div>
+
+                        <div id="bookings-list" class="booking-list">
+                            <!-- Bookings populated by JS -->
+                            <div class="empty-state">Lade Termine...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2: Termin freigeben -->
+                    <div class="dashboard-card glass-panel" style="width: 100%;">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="plus-circle" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                Termin freigeben
+                            </h2>
+                        </div>
+
+                        <form id="create-slot-form" class="u-flex" data-direction="vertical" style="gap: 12px;">
+                            <div class="form-row">
+                                <label for="slot-datetime" class="input-label">Datum & Uhrzeit</label>
+                                <input type="datetime-local" id="slot-datetime" name="dateTime" required class="form-input-date">
                             </div>
 
-                            <form id="create-slot-form" class="u-flex" data-direction="vertical" style="gap: 12px;">
-                                <div class="form-row">
-                                    <label for="slot-datetime" class="input-label">Datum & Uhrzeit</label>
-                                    <input type="datetime-local" id="slot-datetime" name="dateTime" required class="form-input-date">
-                                </div>
+                            <div class="form-row">
+                                <label for="slot-type" class="input-label">Therapieform</label>
+                                <select id="slot-type" name="type" required class="form-select">
+                                    <option value="psychotherapie">Einzelpsychotherapie (50 Min)</option>
+                                    <option value="paartherapie">Paartherapie (90 Min)</option>
+                                </select>
+                            </div>
 
-                                <div class="form-row">
-                                    <label for="slot-type" class="input-label">Therapieform</label>
-                                    <select id="slot-type" name="type" required class="form-select">
-                                        <option value="psychotherapie">Einzelpsychotherapie (50 Min)</option>
-                                        <option value="paartherapie">Paartherapie (90 Min)</option>
-                                    </select>
-                                </div>
+                            <div class="form-row">
+                                <label for="slot-duration" class="input-label">Dauer (Minuten)</label>
+                                <select id="slot-duration" name="duration" required class="form-select">
+                                    <option value="50">50 Minuten (Standard Einzel)</option>
+                                    <option value="90">90 Minuten (Standard Paar)</option>
+                                </select>
+                            </div>
 
-                                <div class="form-row">
-                                    <label for="slot-duration" class="input-label">Dauer (Minuten)</label>
-                                    <select id="slot-duration" name="duration" required class="form-select">
-                                        <option value="50">50 Minuten (Standard Einzel)</option>
-                                        <option value="90">90 Minuten (Standard Paar)</option>
-                                    </select>
-                                </div>
+                            <button type="submit" id="create-slot-submit" class="button-primary w-full mt-2" style="background-color: var(--swatch--sand); border-color: var(--swatch--sand);">
+                                <span>Termin hinzufügen</span>
+                                <i data-lucide="plus" style="width: 18px; height: 18px; margin-left: 6px;"></i>
+                            </button>
+                        </form>
+                    </div>
 
-                                <button type="submit" id="create-slot-submit" class="button-primary w-full mt-2" style="background-color: var(--swatch--sand); border-color: var(--swatch--sand);">
-                                    <span>Termin hinzufügen</span>
-                                    <i data-lucide="plus" style="width: 18px; height: 18px; margin-left: 6px;"></i>
+                    <!-- Card 3: Freigegebene Slots (Calendar + Slots List) -->
+                    <div class="dashboard-card glass-panel" style="width: 100%;">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="clock" class="text-sage" style="width: 24px; height: 24px;"></i> 
+                                Freigegebene Slots
+                            </h2>
+                            <span id="slots-count" class="badge badge-psychotherapie">0</span>
+                        </div>
+
+                        <!-- Admin Calendar View -->
+                        <div class="admin-calendar-wrapper mb-4">
+                            <div class="calendar-header-bar">
+                                <button type="button" id="admin-prev-month-btn" class="nav-month-btn" title="Vorheriger Monat">
+                                    <i data-lucide="chevron-left"></i>
                                 </button>
-                            </form>
-                        </div>
-
-                        <!-- Unbooked Available Slots List -->
-                        <div class="dashboard-card glass-panel">
-                            <div class="card-header-sage">
-                                <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
-                                    <i data-lucide="clock" class="text-sage" style="width: 24px; height: 24px;"></i> 
-                                    Freigegebene Slots
-                                </h2>
-                                <span id="slots-count" class="badge badge-psychotherapie">0</span>
+                                <h4 id="admin-calendar-current-month" class="u-text-style-main font-bold text-dark-text uppercase m-0 tracking-wider">Lade...</h4>
+                                <button type="button" id="admin-next-month-btn" class="nav-month-btn" title="Nächster Monat">
+                                    <i data-lucide="chevron-right"></i>
+                                </button>
                             </div>
-
-                            <div id="slots-list" class="slot-list">
-                                <!-- Slots populated by JS -->
-                                <div class="empty-state">Lade freie Termine...</div>
+                            <div class="calendar-weekdays-header u-grid mb-2" style="grid-template-columns: repeat(7, 1fr);">
+                                <div>MO</div><div>DI</div><div>MI</div><div>DO</div><div>FR</div><div>SA</div><div>SO</div>
+                            </div>
+                            <div id="admin-calendar-days-grid" class="calendar-days-grid">
+                                <!-- Rendered by JS -->
                             </div>
                         </div>
 
-                    </section>
-
-                </div>
+                        <h4 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Termine am ausgewählten Tag</h4>
+                        <div id="slots-list" class="slot-list">
+                            <!-- Slots populated by JS -->
+                            <div class="empty-state">Bitte wählen Sie einen Tag aus dem Kalender aus.</div>
+                        </div>
+                    </div>
             </div>
         </main>
     </div>
@@ -533,6 +677,9 @@
         // State variables
         let bookings = [];
         let slots = [];
+        let adminSelectedDate = '';
+        let adminCurrentMonth = new Date().getMonth();
+        let adminCurrentYear = new Date().getFullYear();
 
         // Elements
         const loadingScreen = document.getElementById("loading-screen");
@@ -548,6 +695,31 @@
         const refreshAllBtn = document.getElementById("refresh-all-btn");
         const slotTypeSelect = document.getElementById("slot-type");
         const slotDurationSelect = document.getElementById("slot-duration");
+
+        // Admin Calendar elements
+        const adminPrevMonthBtn = document.getElementById('admin-prev-month-btn');
+        const adminNextMonthBtn = document.getElementById('admin-next-month-btn');
+        const adminCurrentMonthHeader = document.getElementById('admin-calendar-current-month');
+        const adminDaysGrid = document.getElementById('admin-calendar-days-grid');
+
+        // Month navigation event listeners for Admin Calendar
+        adminPrevMonthBtn.addEventListener('click', () => {
+            adminCurrentMonth--;
+            if (adminCurrentMonth < 0) {
+                adminCurrentMonth = 11;
+                adminCurrentYear--;
+            }
+            renderSlots();
+        });
+
+        adminNextMonthBtn.addEventListener('click', () => {
+            adminCurrentMonth++;
+            if (adminCurrentMonth > 11) {
+                adminCurrentMonth = 0;
+                adminCurrentYear++;
+            }
+            renderSlots();
+        });
 
         // Toast Notification System
         function showToast(message, isError = false) {
@@ -822,37 +994,249 @@
         }
 
         // Render Available Slots
-        function renderSlots() {
-            slotsCountEl.textContent = slots.length;
+        // Helper to get local date YYYY-MM-DD in Europe/Vienna
+        function getLocalDateString(dateTimeStr) {
+            const date = new Date(dateTimeStr);
+            return new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Europe/Vienna',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(date);
+        }
 
-            if (slots.length === 0) {
+        // Helper to combine available and booked slots in-memory
+        function getAllAdminSlots() {
+            const all = [];
+            // Add available slots
+            slots.forEach(s => {
+                all.push({
+                    id: s.id,
+                    dateTime: s.dateTime,
+                    duration: s.duration,
+                    type: s.type,
+                    status: "available"
+                });
+            });
+            // Add booked slots (constructed from bookings)
+            bookings.forEach(b => {
+                all.push({
+                    id: b.slotId, // The slot ID
+                    bookingId: b.id, // The booking ID
+                    dateTime: b.dateTime,
+                    duration: b.duration,
+                    type: b.type,
+                    status: "booked",
+                    clientName: b.name,
+                    clientEmail: b.email,
+                    clientPhone: b.phone,
+                    clientNotes: b.notes
+                });
+            });
+            return all;
+        }
+
+        // Render Available Slots with Admin Calendar Grid
+        function renderSlots() {
+            const allAdminSlots = getAllAdminSlots();
+            
+            // Total slot count is the number of all slots (both available and booked)
+            slotsCountEl.textContent = allAdminSlots.length;
+
+            if (allAdminSlots.length === 0) {
+                adminDaysGrid.innerHTML = '';
                 slotsListEl.innerHTML = `<div class="empty-state">Keine freigegebenen Slots.</div>`;
+                adminCurrentMonthHeader.textContent = "Keine Daten";
                 return;
             }
 
-            slotsListEl.innerHTML = "";
-            slots.forEach(slot => {
+            // Map slots with local Vienna date string
+            const slotsWithDate = allAdminSlots.map(slot => ({
+                ...slot,
+                localDateStr: getLocalDateString(slot.dateTime)
+            }));
+
+            // Group slots by date
+            const grouped = {};
+            slotsWithDate.forEach(slot => {
+                if (!grouped[slot.localDateStr]) {
+                    grouped[slot.localDateStr] = [];
+                }
+                grouped[slot.localDateStr].push(slot);
+            });
+
+            // Focus on the first slot's month if it's the first load
+            if (!adminSelectedDate) {
+                const sortedDates = Object.keys(grouped).sort();
+                if (sortedDates.length > 0) {
+                    const firstDateObj = new Date(sortedDates[0]);
+                    adminCurrentMonth = firstDateObj.getMonth();
+                    adminCurrentYear = firstDateObj.getFullYear();
+                }
+            }
+
+            generateAdminCalendarGrid(grouped);
+        }
+
+        // Generate admin calendar grid
+        function generateAdminCalendarGrid(grouped) {
+            const monthNamesDe = [
+                "Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November", "Dezember"
+            ];
+            adminCurrentMonthHeader.textContent = `${monthNamesDe[adminCurrentMonth]} ${adminCurrentYear}`;
+
+            adminDaysGrid.innerHTML = '';
+
+            // Get first day of the week for current month (Mon = 0, Sun = 6)
+            const firstDayOfMonth = new Date(adminCurrentYear, adminCurrentMonth, 1);
+            let firstDayIndex = firstDayOfMonth.getDay(); 
+            let startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+
+            // Number of days in current month
+            const numDays = new Date(adminCurrentYear, adminCurrentMonth + 1, 0).getDate();
+
+            // Preceding empty cells
+            for (let i = 0; i < startOffset; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-btn empty-cell';
+                adminDaysGrid.appendChild(cell);
+            }
+
+            let firstSelectedDayBtn = null;
+            let firstSelectedDayGroup = null;
+            let firstSelectedDayStr = '';
+
+            // Render day cells
+            for (let day = 1; day <= numDays; day++) {
+                const formattedDateStr = `${adminCurrentYear}-${String(adminCurrentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'calendar-day-btn';
+                cell.textContent = day;
+
+                const daySlots = grouped[formattedDateStr] || [];
+                const hasSlots = daySlots.length > 0;
+
+                if (!hasSlots) {
+                    cell.classList.add('unavailable');
+                } else {
+                    cell.classList.add('available');
+                    
+                    if (!firstSelectedDayBtn) {
+                        firstSelectedDayBtn = cell;
+                        firstSelectedDayGroup = daySlots;
+                        firstSelectedDayStr = formattedDateStr;
+                    }
+
+                    if (adminSelectedDate === formattedDateStr) {
+                        cell.classList.add('selected');
+                    }
+
+                    cell.addEventListener('click', () => {
+                        document.querySelectorAll('#admin-calendar-days-grid .calendar-day-btn').forEach(b => b.classList.remove('selected'));
+                        cell.classList.add('selected');
+                        adminSelectedDate = formattedDateStr;
+                        renderAdminTimeSlots(daySlots);
+                    });
+                }
+
+                adminDaysGrid.appendChild(cell);
+            }
+
+            // Pad grid to 42 cells (6 rows) to ensure consistent height
+            const totalCellsRendered = startOffset + numDays;
+            const paddingCellsNeeded = 42 - totalCellsRendered;
+            for (let i = 0; i < paddingCellsNeeded; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-btn empty-cell';
+                adminDaysGrid.appendChild(cell);
+            }
+
+            // Auto-select first available day in this month if no valid selection is active in it
+            const currentMonthPrefix = `${adminCurrentYear}-${String(adminCurrentMonth + 1).padStart(2, '0')}`;
+            if (firstSelectedDayBtn && (!adminSelectedDate || !adminSelectedDate.startsWith(currentMonthPrefix))) {
+                firstSelectedDayBtn.classList.add('selected');
+                adminSelectedDate = firstSelectedDayStr;
+                renderAdminTimeSlots(firstSelectedDayGroup);
+            } else if (!firstSelectedDayBtn && (!adminSelectedDate || !adminSelectedDate.startsWith(currentMonthPrefix))) {
+                slotsListEl.innerHTML = '<div class="empty-state">Keine freigegebenen Slots in diesem Monat.</div>';
+            } else if (adminSelectedDate && adminSelectedDate.startsWith(currentMonthPrefix)) {
+                renderAdminTimeSlots(grouped[adminSelectedDate] || []);
+            }
+
+            // Re-init lucide icons on the navigation buttons
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+
+        // Render time slots list for selected day in admin panel
+        function renderAdminTimeSlots(daySlots) {
+            slotsListEl.innerHTML = '';
+
+            if (!daySlots || daySlots.length === 0) {
+                slotsListEl.innerHTML = '<div class="empty-state">Bitte wählen Sie einen Tag aus dem Kalender aus.</div>';
+                return;
+            }
+
+            // Sort slots chronologically by time
+            daySlots.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+            daySlots.forEach(slot => {
                 const item = document.createElement("div");
                 item.className = "slot-item";
+
+                const dateObj = new Date(slot.dateTime);
+                const timeStr = dateObj.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vienna' });
                 
                 const typeLabel = slot.type === "psychotherapie" 
                     ? "Einzel (50m)" 
                     : "Paar (90m)";
                 
-                item.innerHTML = `
-                    <div class="slot-info">
-                        <strong style="color: #111827;">${formatDateTime(slot.dateTime)}</strong>
-                        <span class="text-gray-500" style="font-size: 0.8rem;">${typeLabel}</span>
-                    </div>
-                    <button type="button" class="btn-delete" data-id="${slot.id}" title="Slot löschen">
-                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                    </button>
-                `;
+                if (slot.status === "available") {
+                    item.innerHTML = `
+                        <div class="slot-info">
+                            <strong style="color: #111827;">${timeStr} Uhr</strong>
+                            <div class="u-flex gap-xs" data-align="center" style="margin-top: 4px;">
+                                <span class="badge badge-frei" style="font-size: 0.65rem; padding: 2px 6px;">Frei</span>
+                                <span class="text-gray-500" style="font-size: 0.8rem;">${typeLabel}</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-delete" data-id="${slot.id}" title="Slot löschen">
+                            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    `;
 
-                // Add delete click handler
-                item.querySelector(".btn-delete").addEventListener("click", () => {
-                    deleteSlot(slot.id, slot.dateTime);
-                });
+                    // Add delete click handler
+                    item.querySelector(".btn-delete").addEventListener("click", () => {
+                        deleteSlot(slot.id, slot.dateTime);
+                    });
+                } else {
+                    // Booked slot
+                    item.innerHTML = `
+                        <div class="slot-info">
+                            <strong style="color: #111827;">${timeStr} Uhr</strong>
+                            <div class="u-flex gap-xs" data-align="center" style="margin-top: 4px; margin-bottom: 6px;">
+                                <span class="badge badge-gebucht" style="font-size: 0.65rem; padding: 2px 6px;">Gebucht</span>
+                                <span class="text-gray-500" style="font-size: 0.8rem;">${typeLabel}</span>
+                            </div>
+                            <span style="font-size: 0.85rem; color: var(--swatch--dark-text); font-weight: 500;">
+                                <i data-lucide="user" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px; color: #6b7280;"></i>
+                                Gebucht von: <strong style="color: #111827;">${slot.clientName}</strong>
+                            </span>
+                        </div>
+                        <button type="button" class="btn-cancel" data-id="${slot.bookingId}" title="Termin stornieren" style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.15); padding: 6px 12px; border-radius: 9999px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;">
+                            <i data-lucide="x" style="width: 12px; height: 12px;"></i> Stornieren
+                        </button>
+                    `;
+
+                    // Add Cancel click handler
+                    item.querySelector(".btn-cancel").addEventListener("click", () => {
+                        cancelBooking(slot.bookingId, slot.clientName, slot.dateTime);
+                    });
+                }
 
                 slotsListEl.appendChild(item);
             });
