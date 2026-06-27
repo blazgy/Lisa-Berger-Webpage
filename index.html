@@ -777,7 +777,18 @@
                 <div class="calendar-container u-grid gap-lg-grid" data-large-columns="12" data-medium-columns="1">
                     <!-- Left: Calendar days list -->
                     <div class="calendar-days-sidebar col-span-7">
-                        <h4 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-3">Verfügbare Tage</h4>
+                        <div class="calendar-header-bar">
+                            <button type="button" id="prev-month-btn" class="nav-month-btn" title="Vorheriger Monat">
+                                <i data-lucide="chevron-left"></i>
+                            </button>
+                            <h4 id="calendar-current-month" class="u-text-style-main font-bold text-dark-text uppercase m-0 tracking-wider">Juli 2026</h4>
+                            <button type="button" id="next-month-btn" class="nav-month-btn" title="Nächster Monat">
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="calendar-weekdays-header u-grid mb-2" style="grid-template-columns: repeat(7, 1fr);">
+                            <div>MO</div><div>DI</div><div>MI</div><div>DO</div><div>FR</div><div>SA</div><div>SO</div>
+                        </div>
                         <div id="calendar-days-grid" class="calendar-days-grid">
                             <!-- Rendered by JS -->
                         </div>
@@ -876,6 +887,8 @@
             let selectedType = '';
             let selectedDate = '';
             let selectedSlot = null;
+            let currentMonth = new Date().getMonth();
+            let currentYear = new Date().getFullYear();
 
             // Elements
             const dialog = document.getElementById('booking-dialog');
@@ -890,6 +903,9 @@
             const closeSuccessBtn = document.getElementById('close-success-btn');
             const datenschutzLink = document.getElementById('booking-datenschutz-link');
             const submitBtn = document.getElementById('submit-booking-btn');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
+            const currentMonthHeader = document.getElementById('calendar-current-month');
 
             // Steps
             const steps = {
@@ -926,6 +942,8 @@
                 selectedType = '';
                 selectedDate = '';
                 selectedSlot = null;
+                currentMonth = new Date().getMonth();
+                currentYear = new Date().getFullYear();
                 bookingForm.reset();
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Kostenpflichtig buchen';
@@ -1037,6 +1055,25 @@
                 });
             });
 
+            // Month navigation event listeners
+            prevMonthBtn.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+
+            nextMonthBtn.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+
             // Fetch available slots from Cloud Run API
             async function fetchSlots() {
                 daysGrid.innerHTML = '<p class="text-gray-500 u-text-style-small italic col-span-12 text-center">Lade verfügbare Termine...</p>';
@@ -1061,6 +1098,17 @@
                 }
             }
 
+            // Helper to get local date YYYY-MM-DD in Europe/Vienna
+            function getLocalDateString(dateTimeStr) {
+                const date = new Date(dateTimeStr);
+                return new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Europe/Vienna',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).format(date);
+            }
+
             // Group and render calendar based on selectedType
             function renderCalendar() {
                 filteredSlots = allSlots.filter(slot => slot.type === selectedType);
@@ -1074,50 +1122,139 @@
                 document.querySelector('.calendar-container').classList.remove('hidden');
                 noSlotsMsg.classList.add('hidden');
 
+                // Map slots with local Vienna date string
+                const slotsWithDate = filteredSlots.map(slot => ({
+                    ...slot,
+                    localDateStr: getLocalDateString(slot.dateTime)
+                }));
+
+                // Group slots by date
                 const grouped = {};
-                filteredSlots.forEach(slot => {
-                    const dateStr = slot.dateTime.split('T')[0];
-                    if (!grouped[dateStr]) {
-                        grouped[dateStr] = [];
+                slotsWithDate.forEach(slot => {
+                    if (!grouped[slot.localDateStr]) {
+                        grouped[slot.localDateStr] = [];
                     }
-                    grouped[dateStr].push(slot);
+                    grouped[slot.localDateStr].push(slot);
                 });
 
-                const sortedDates = Object.keys(grouped).sort();
-                
+                // Auto-focus on the first available slot's month if it's the first render for this type
+                if (!selectedDate) {
+                    const sortedDates = Object.keys(grouped).sort();
+                    if (sortedDates.length > 0) {
+                        const firstDateObj = new Date(sortedDates[0]);
+                        currentMonth = firstDateObj.getMonth();
+                        currentYear = firstDateObj.getFullYear();
+                    }
+                }
+
+                generateCalendarGrid(grouped);
+            }
+
+            // Generate monthly grid view
+            function generateCalendarGrid(grouped) {
+                const monthNamesDe = [
+                    "Januar", "Februar", "März", "April", "Mai", "Juni",
+                    "Juli", "August", "September", "Oktober", "November", "Dezember"
+                ];
+                currentMonthHeader.textContent = `${monthNamesDe[currentMonth]} ${currentYear}`;
+
                 daysGrid.innerHTML = '';
-                sortedDates.forEach((dateStr, idx) => {
-                    const dateObj = new Date(dateStr + 'T00:00:00');
-                    const dayName = dateObj.toLocaleDateString('de-AT', { weekday: 'short' });
-                    const dayNum = dateObj.toLocaleDateString('de-AT', { day: 'numeric' });
+
+                // Get first day of the week for current month (Mon = 0, Sun = 6)
+                const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+                let firstDayIndex = firstDayOfMonth.getDay(); 
+                let startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+
+                // Number of days in current month
+                const numDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+                // Preceding empty cells
+                for (let i = 0; i < startOffset; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day-btn empty-cell';
+                    daysGrid.appendChild(cell);
+                }
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                let firstSelectedDayBtn = null;
+                let firstSelectedDayGroup = null;
+                let firstSelectedDayStr = '';
+
+                // Render actual day cells
+                for (let day = 1; day <= numDays; day++) {
+                    const dateObj = new Date(currentYear, currentMonth, day);
+                    const formattedDateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'calendar-day-btn';
-                    btn.innerHTML = `
-                        <span class="day-name">${dayName}</span>
-                        <span class="day-num">${dayNum}</span>
-                    `;
+                    const cell = document.createElement('button');
+                    cell.type = 'button';
+                    cell.className = 'calendar-day-btn';
+                    cell.textContent = day;
+
+                    const cellDate = new Date(currentYear, currentMonth, day);
+                    cellDate.setHours(0, 0, 0, 0);
                     
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.calendar-day-btn').forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
+                    const isPast = cellDate < today;
+                    const hasSlots = grouped[formattedDateStr] && grouped[formattedDateStr].length > 0;
+
+                    if (isPast || !hasSlots) {
+                        cell.classList.add('unavailable');
+                    } else {
+                        cell.classList.add('available');
                         
-                        selectedDate = dateStr;
-                        renderTimeSlots(grouped[dateStr]);
-                    });
+                        if (!firstSelectedDayBtn) {
+                            firstSelectedDayBtn = cell;
+                            firstSelectedDayGroup = grouped[formattedDateStr];
+                            firstSelectedDayStr = formattedDateStr;
+                        }
 
-                    daysGrid.appendChild(btn);
+                        if (selectedDate === formattedDateStr) {
+                            cell.classList.add('selected');
+                        }
 
-                    if (idx === 0) {
-                        btn.click();
+                        cell.addEventListener('click', () => {
+                            document.querySelectorAll('.calendar-day-btn').forEach(b => b.classList.remove('selected'));
+                            cell.classList.add('selected');
+                            selectedDate = formattedDateStr;
+                            renderTimeSlots(grouped[formattedDateStr]);
+                        });
                     }
-                });
+
+                    daysGrid.appendChild(cell);
+                }
+
+                // Auto-select first available day in this month if no valid selection is active in it
+                const currentMonthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+                if (firstSelectedDayBtn && (!selectedDate || !selectedDate.startsWith(currentMonthPrefix))) {
+                    firstSelectedDayBtn.classList.add('selected');
+                    selectedDate = firstSelectedDayStr;
+                    renderTimeSlots(firstSelectedDayGroup);
+                } else if (!firstSelectedDayBtn && (!selectedDate || !selectedDate.startsWith(currentMonthPrefix))) {
+                    slotsGrid.innerHTML = '<p class="text-gray-500 u-text-style-small italic col-span-2 text-center p-4">Keine freien Termine in diesem Monat.</p>';
+                } else if (selectedDate && selectedDate.startsWith(currentMonthPrefix)) {
+                    renderTimeSlots(grouped[selectedDate] || []);
+                }
+
+                // Re-init lucide icons on the navigation buttons
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+
+                // Disable previous month button if we are looking at current or past month
+                const realToday = new Date();
+                const isCurrentMonthOrPast = (currentYear < realToday.getFullYear()) || (currentYear === realToday.getFullYear() && currentMonth <= realToday.getMonth());
+                prevMonthBtn.disabled = isCurrentMonthOrPast;
             }
 
             // Render time slots for selected day
             function renderTimeSlots(slots) {
                 slotsGrid.innerHTML = '';
+                
+                if (!slots || slots.length === 0) {
+                    slotsGrid.innerHTML = '<p class="text-gray-500 u-text-style-small italic col-span-2 text-center p-4">Bitte wählen Sie einen Tag aus.</p>';
+                    return;
+                }
                 
                 slots.forEach(slot => {
                     const dateObj = new Date(slot.dateTime);
@@ -1127,6 +1264,10 @@
                     btn.type = 'button';
                     btn.className = 'calendar-slot-btn';
                     btn.textContent = `${timeStr} Uhr`;
+                    
+                    if (selectedSlot && selectedSlot.id === slot.id) {
+                        btn.classList.add('selected');
+                    }
                     
                     btn.addEventListener('click', () => {
                         document.querySelectorAll('.calendar-slot-btn').forEach(b => b.classList.remove('selected'));
