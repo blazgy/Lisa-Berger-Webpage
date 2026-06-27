@@ -685,14 +685,19 @@
         async function loadDashboardData() {
             refreshAllBtn.classList.add("loading");
             // Set spinner / spinning effect on icon
-            refreshAllBtn.querySelector("i").style.animation = "spin 1s linear infinite";
+            const icon = refreshAllBtn.querySelector("i, svg");
+            if (icon) {
+                icon.style.animation = "spin 1s linear infinite";
+            }
             
             await Promise.all([
                 fetchBookings(),
                 fetchAvailableSlots()
             ]);
             
-            refreshAllBtn.querySelector("i").style.animation = "";
+            if (icon) {
+                icon.style.animation = "";
+            }
             refreshAllBtn.classList.remove("loading");
         }
 
