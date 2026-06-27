@@ -1224,6 +1224,15 @@
                     daysGrid.appendChild(cell);
                 }
 
+                // Pad grid to exactly 42 cells (6 full rows of 7 columns) to prevent box height jumping
+                const totalCellsRendered = startOffset + numDays;
+                const paddingCellsNeeded = 42 - totalCellsRendered;
+                for (let i = 0; i < paddingCellsNeeded; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day-btn empty-cell';
+                    daysGrid.appendChild(cell);
+                }
+
                 // Auto-select first available day in this month if no valid selection is active in it
                 const currentMonthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
                 if (firstSelectedDayBtn && (!selectedDate || !selectedDate.startsWith(currentMonthPrefix))) {
