@@ -171,6 +171,35 @@ async function verifyAdmin(req, res, next) {
   }
 }
 
+// Helper to parse local Vienna date and time to a UTC Date object
+function getViennaDate(localDateStr, timeStr) {
+  // localDateStr is "YYYY-MM-DD", timeStr is "HH:MM"
+  const utcDate = new Date(`${localDateStr}T${timeStr}:00.000Z`);
+  
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Vienna',
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: false
+  }).formatToParts(utcDate);
+  
+  const map = {};
+  parts.forEach(p => map[p.type] = p.value);
+  
+  const viennaLocal = new Date(Date.UTC(
+    Number(map.year),
+    Number(map.month) - 1,
+    Number(map.day),
+    Number(map.hour),
+    Number(map.minute),
+    Number(map.second)
+  ));
+  
+  const offsetMs = viennaLocal.getTime() - utcDate.getTime();
+  const correctedDate = new Date(utcDate.getTime() - offsetMs);
+  return correctedDate;
+}
+
 // Admin API Endpoints
 exports.admin = {
   createSlot: onRequest({ cors: true }, async (req, res) => {
@@ -325,6 +354,131 @@ exports.admin = {
         }
 
         res.status(200).json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  saveTemplate: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const { template } = req.body;
+        if (!Array.isArray(template)) {
+          return res.status(400).json({ error: "Template must be an array." });
+        }
+
+        // Validate template items
+        for (const item of template) {
+          if (typeof item.dayOfWeek !== "number" || item.dayOfWeek < 1 || item.dayOfWeek > 7) {
+            return res.status(400).json({ error: "dayOfWeek must be a number between 1 and 7." });
+          }
+          if (typeof item.time !== "string" || !/^\d{2}:\d{2}$/.test(item.time)) {
+            return res.status(400).json({ error: "time must be in HH:MM format." });
+          }
+          if (item.type !== "psychotherapie" && item.type !== "paartherapie") {
+            return res.status(400).json({ error: "Type must be 'psychotherapie' or 'paartherapie'." });
+          }
+          if (item.duration !== 50 && item.duration !== 90) {
+            return res.status(400).json({ error: "Duration must be 50 or 90." });
+          }
+        }
+
+        await db.collection("templates").doc("weekly_default").set({
+          template,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        res.status(200).json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  getTemplate: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const doc = await db.collection("templates").doc("weekly_default").get();
+        if (!doc.exists) {
+          return res.status(200).json({ template: [] });
+        }
+        res.status(200).json(doc.data());
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  }),
+
+  applyTemplate: onRequest({ cors: true }, async (req, res) => {
+    verifyAdmin(req, res, async () => {
+      try {
+        const { mondayDate } = req.body;
+        if (!mondayDate || !/^\d{4}-\d{2}-\d{2}$/.test(mondayDate)) {
+          return res.status(400).json({ error: "mondayDate must be in YYYY-MM-DD format." });
+        }
+
+        // Fetch template
+        const templateDoc = await db.collection("templates").doc("weekly_default").get();
+        if (!templateDoc.exists) {
+          return res.status(400).json({ error: "No weekly template defined." });
+        }
+
+        const { template } = templateDoc.data();
+        if (!Array.isArray(template) || template.length === 0) {
+          return res.status(400).json({ error: "Weekly template is empty." });
+        }
+
+        const startMonday = new Date(mondayDate + 'T00:00:00');
+        if (isNaN(startMonday.getTime())) {
+          return res.status(400).json({ error: "Invalid Monday date." });
+        }
+
+        const slotsToCreate = [];
+        
+        // Loop through template items
+        for (const item of template) {
+          const targetDate = new Date(startMonday);
+          targetDate.setDate(startMonday.getDate() + (item.dayOfWeek - 1));
+          
+          const yyyy = targetDate.getFullYear();
+          const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(targetDate.getDate()).padStart(2, '0');
+          const dateStr = `${yyyy}-${mm}-${dd}`;
+          
+          const viennaDate = getViennaDate(dateStr, item.time);
+          const timestamp = admin.firestore.Timestamp.fromDate(viennaDate);
+
+          // Check if slot already exists in DB to prevent duplicates
+          const query = await db.collection("slots")
+            .where("dateTime", "==", timestamp)
+            .limit(1)
+            .get();
+
+          if (query.empty) {
+            slotsToCreate.push({
+              dateTime: timestamp,
+              duration: item.duration,
+              type: item.type,
+              status: "available",
+              bookingId: null
+            });
+          }
+        }
+
+        if (slotsToCreate.length === 0) {
+          return res.status(200).json({ success: true, createdCount: 0 });
+        }
+
+        // Batch write to Firestore
+        const batch = db.batch();
+        slotsToCreate.forEach(s => {
+          const ref = db.collection("slots").doc();
+          batch.set(ref, s);
+        });
+        await batch.commit();
+
+        res.status(200).json({ success: true, createdCount: slotsToCreate.length });
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
