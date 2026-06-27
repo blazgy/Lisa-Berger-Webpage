@@ -15,20 +15,24 @@ exports.getAvailableSlots = onRequest({ cors: true }, async (req, res) => {
     const now = admin.firestore.Timestamp.now();
     const snapshot = await db.collection("slots")
       .where("status", "==", "available")
-      .where("dateTime", ">=", now)
-      .orderBy("dateTime", "asc")
       .get();
       
     const slots = [];
     snapshot.forEach(doc => {
       const data = doc.data();
-      slots.push({
-        id: doc.id,
-        dateTime: data.dateTime.toDate().toISOString(),
-        duration: data.duration,
-        type: data.type
-      });
+      // Filter future slots in-memory
+      if (data.dateTime && data.dateTime.toMillis() >= now.toMillis()) {
+        slots.push({
+          id: doc.id,
+          dateTime: data.dateTime.toDate().toISOString(),
+          duration: data.duration,
+          type: data.type
+        });
+      }
     });
+    
+    // Sort chronologically (ascending)
+    slots.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
     
     res.status(200).json(slots);
   } catch (error) {
