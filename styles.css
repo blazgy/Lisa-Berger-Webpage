@@ -1630,18 +1630,9 @@ html.scroll-smooth {
 
 .info-banner-inner {
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    justify-content: center;
     max-width: 900px;
     margin: 0 auto;
-}
-
-.info-banner-icon {
-    color: var(--swatch--dark-text);
-    flex-shrink: 0;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.15rem; /* Optical alignment with first line of body text */
 }
 
 .info-banner-text {
@@ -1649,14 +1640,12 @@ html.scroll-smooth {
     font-size: var(--text-size--small);
     line-height: 1.6;
     color: var(--swatch--dark-text);
+    text-align: center;
 }
 
 @media screen and (max-width: 767px) {
     .info-banner {
         padding: 0.875rem 1.25rem;
         margin-bottom: 1.75rem;
-    }
-    .info-banner-inner {
-        gap: 0.75rem;
     }
 }
