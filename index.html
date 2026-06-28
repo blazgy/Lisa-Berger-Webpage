@@ -45,6 +45,9 @@
       "url": "https://www.psychotherapieberger.at/",
       "telephone": "+43 677 631 426 87",
       "email": "info@psychotherapieberger.at",
+      "priceRange": "80€ - 180€",
+      "paymentAccepted": "Cash, Bank Transfer",
+      "currenciesAccepted": "EUR",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Stadtplatz 36/25",
@@ -56,6 +59,27 @@
         "@type": "GeoCoordinates",
         "latitude": 48.0084,
         "longitude": 13.6559
+      },
+      "areaServed": [
+        {
+          "@type": "AdministrativeArea",
+          "name": "Vöcklabruck"
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Oberösterreich"
+        }
+      ],
+      "founder": {
+        "@type": "Person",
+        "name": "Lisa Berger",
+        "jobTitle": "Psychotherapeutin",
+        "knowsAbout": [
+          "Psychotherapie",
+          "Paartherapie",
+          "Personzentrierte Psychotherapie",
+          "Humanistische Psychotherapie"
+        ]
       },
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
@@ -70,10 +94,67 @@
         "closes": "18:00"
       },
       "medicalSpecialty": "Psychiatric",
-      "acceptsReservations": "true",
-      "priceRange": "80€"
+      "acceptsReservations": "true"
     }
     </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Für wen ist das Psychotherapie-Angebot geeignet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In meiner Praxis arbeite ich mit Jugendlichen und Erwachsenen. Für den Beginn der Therapie ist keine ärztliche Zuweisung erforderlich."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Wie viel kostet eine Einheit Psychotherapie oder Paartherapie?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Eine Einheit Psychotherapie dauert 50 Minuten und kostet 80 €. Eine Einheit Paartherapie dauert 90 Minuten und kostet 180 €."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bieten Sie auch Plätze zu Sozialtarifen an?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja. Es ist mir ein Anliegen, Psychotherapie auch Menschen zugänglich zu machen, die sich das reguläre Honorar nicht leisten können. Daher biete ich auf Anfrage eine begrenzte Anzahl an Therapieplätzen zu Sozialtarifen an."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Wie lautet die Absageregelung für Therapietermine?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Einen bereits festgelegten Termin können Sie bis zu 48 Stunden vor der geplanten Einheit kostenfrei absagen. Kurzfristige Absagen und versäumte Stunden werden in Rechnung gestellt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Unterliegen Sie der Verschwiegenheitspflicht?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja. Als Psychotherapeutin bin ich gemäß §15 Psychotherapiegesetz zur absoluten Verschwiegenheit verpflichtet. Diese gilt auch vor Behörden, Krankenkassen oder Angehörigen."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Was bedeutet der Status 'Psychotherapeutin in Fachausbildung unter Lehrsupervision'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Das bedeutet, dass ich mich im letzten Abschnitt meiner Ausbildung befinde und meine psychotherapeutische Arbeit supervidieren lasse. Ich biete meine Stunden zu einem günstigeren Tarif an, eine Rückerstattung durch gesetzliche Krankenkassen ist jedoch nicht möglich."
+          }
+        }
+      ]
+    }
+    </script>
+
 
     <!-- CSS Frameworks & Custom Styles -->
     <link rel="stylesheet" href="styles.css?v=1.4">
@@ -127,7 +208,7 @@
                             <h1 class="u-text-style-h1 text-dark-text leading-tight mb-8">
                                 Lisa Berger, MA
                             </h1>
-                            <h2 class="sr-only" aria-hidden="true"
+                            <h2 class="sr-only"
                                 style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
                                 Personzentrierte Psychotherapie in Vöcklabruck</h2>
 
