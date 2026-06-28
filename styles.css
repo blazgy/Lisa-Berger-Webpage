@@ -1616,63 +1616,47 @@ html.scroll-smooth {
     min-height: 0;
 }
 
-/* ========================================================= */
-/* TEXT MARQUEE                                              */
-/* ========================================================= */
-
-.marquee-container {
-    overflow: hidden;
+/* INFO BANNER */
+.info-banner {
     width: 100%;
-    position: relative;
-    padding-block: 0.75rem;
-    margin-bottom: 2rem;
-    pointer-events: none;
-    /* Smooth fading gradient mask on left and right edges (shortened by 50%) */
-    mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 7.5%, #000 92.5%, transparent);
-    
-    /* Hardware acceleration / Anti-flicker */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-perspective: 1000px;
-    perspective: 1000px;
+    margin-bottom: 2.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    background: rgba(179, 218, 182, 0.15); /* Light Sage tint */
+    border: 1px solid rgba(179, 218, 182, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
-.marquee-track {
+.info-banner-inner {
     display: flex;
-    width: max-content;
-    animation: marquee-scroll 30s linear infinite;
-    
-    /* Hardware acceleration / Anti-flicker */
-    will-change: transform;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    align-items: flex-start;
+    gap: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.marquee-group {
-    display: flex;
-    align-items: center;
-    gap: 3rem;
-    padding-right: 3rem;
+.info-banner-icon {
+    color: var(--swatch--dark-text);
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.15rem; /* Optical alignment with first line of body text */
 }
 
-.marquee-group span {
-    white-space: nowrap;
-}
-
-@keyframes marquee-scroll {
-    0% {
-        transform: translate3d(0, 0, 0);
-    }
-    100% {
-        transform: translate3d(-50%, 0, 0);
-    }
+.info-banner-text {
+    font-family: var(--font-family--body);
+    font-size: var(--text-size--small);
+    line-height: 1.6;
+    color: var(--swatch--dark-text);
 }
 
 @media screen and (max-width: 767px) {
-    .marquee-track {
-        animation-duration: 24s;
+    .info-banner {
+        padding: 0.875rem 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+    .info-banner-inner {
+        gap: 0.75rem;
     }
 }
