@@ -1638,8 +1638,9 @@ html.scroll-smooth {
 .info-banner-text {
     font-family: var(--font-family--body);
     font-size: var(--text-size--small);
-    line-height: 1.6;
-    color: var(--swatch--dark-text);
+    font-weight: 400;
+    line-height: 1.625; /* leading-relaxed */
+    color: #4b5563; /* text-gray-600 */
     text-align: center;
 }
 
