@@ -1,0 +1,84 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Local development config (wrangler dev / vitest). Deployed environments are under "env".
+  "name": "lisa-berger-booking-dev",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+
+  // The static site (built by scripts/build-site.mjs). The Worker runs first so it can
+  // add security headers, the staging banner and noindex before serving any file.
+  "assets": {
+    "directory": "./.site",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lisa-berger-booking-dev",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "ratelimits": [
+    { "name": "BOOKING_LIMITER", "namespace_id": "4101", "simple": { "limit": 5, "period": 60 } },
+    { "name": "READ_LIMITER", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } },
+    { "name": "LOGIN_LIMITER", "namespace_id": "4103", "simple": { "limit": 5, "period": 60 } }
+  ],
+
+  // Daily cleanup (data retention) at 03:15 UTC.
+  "triggers": { "crons": ["15 3 * * *"] },
+
+  "vars": {
+    "ENVIRONMENT": "development",
+    // "log" stores e-mails in the database (visible in the admin outbox) instead of sending.
+    "EMAIL_MODE": "log",
+    "PUBLIC_BASE_URL": "http://localhost:8787",
+    "PRACTICE_EMAIL": "info@psychotherapieberger.at",
+    "MAIL_FROM": "info@psychotherapieberger.at",
+    "SMTP_HOST": "mx152d.netcup.net",
+    "SMTP_PORT": "465",
+    // Cloudflare's documented always-pass Turnstile test key.
+    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+    // Extra origins allowed to call the public API (comma-separated), e.g. the netcup-hosted site.
+    "ALLOWED_ORIGINS": ""
+  },
+
+  "env": {
+    "staging": {
+      "name": "lisa-berger-booking-staging",
+      "workers_dev": true,
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "lisa-berger-booking-staging",
+          "database_id": "94d9b05e-9c08-4dfd-86a5-32edf80459c6",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "ratelimits": [
+        { "name": "BOOKING_LIMITER", "namespace_id": "4201", "simple": { "limit": 5, "period": 60 } },
+        { "name": "READ_LIMITER", "namespace_id": "4202", "simple": { "limit": 120, "period": 60 } },
+        { "name": "LOGIN_LIMITER", "namespace_id": "4203", "simple": { "limit": 5, "period": 60 } }
+      ],
+      "triggers": { "crons": ["15 3 * * *"] },
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "EMAIL_MODE": "log",
+        "PUBLIC_BASE_URL": "https://lisa-berger-booking-staging.blazgyoha.workers.dev",
+        "PRACTICE_EMAIL": "info@psychotherapieberger.at",
+        "MAIL_FROM": "info@psychotherapieberger.at",
+        "SMTP_HOST": "mx152d.netcup.net",
+        "SMTP_PORT": "465",
+        "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+        "ALLOWED_ORIGINS": ""
+      }
+    }
+  }
+}

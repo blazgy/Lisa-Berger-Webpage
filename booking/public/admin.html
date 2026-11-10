@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praxis-Dashboard | Lisa Berger</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="booking.css?v=1">
+    <link rel="stylesheet" href="admin.css?v=1">
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+
+<body class="bg-off-white text-dark-text">
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <p class="u-text-style-small text-gray-600">Verbindung wird hergestellt …</p>
+    </div>
+
+    <!-- Login -->
+    <div id="login-view" class="u-container hidden">
+        <div class="login-card glass-panel shadow-sm" style="border-top: 3px solid var(--swatch--sand);">
+            <img src="berger-logo.svg" alt="Lisa Berger" style="height: 40px; width: auto; margin-bottom: 1.5rem;">
+            <h1 class="u-text-style-h3 text-dark-text mb-4">Praxis-Dashboard</h1>
+            <form id="login-form" class="u-flex" data-direction="vertical" style="gap: 12px;">
+                <label for="login-password" class="input-label">Passwort</label>
+                <input type="password" id="login-password" class="form-input" autocomplete="current-password" required>
+                <div id="login-error" class="booking-error hidden" role="alert"></div>
+                <button type="submit" class="button-primary w-full" style="background-color: var(--swatch--sand); border-color: var(--swatch--sand);">Anmelden</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-app" class="page_wrap hidden">
+        <header class="dashboard-header">
+            <div class="u-container u-flex" data-justify="space-between" data-align="center">
+                <a href="/" class="nav-logo u-flex gap-sm" data-align="center">
+                    <img src="berger-logo.svg" alt="Lisa Berger" style="height: 36px; width: auto;">
+                    <span id="env-badge" class="env-badge hidden"></span>
+                </a>
+                <button type="button" id="logout-btn" class="button-small u-flex gap-sm" data-align="center">
+                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Abmelden
+                </button>
+            </div>
+        </header>
+
+        <main class="main_wrapper dashboard-container">
+            <div class="u-container">
+                <div class="dashboard-title-bar">
+                    <div>
+                        <h1 class="u-text-style-h2 text-dark-text mb-1">Praxis-Dashboard</h1>
+                        <p class="u-text-style-small text-gray-600">Online-Buchungen und freie Termine verwalten</p>
+                    </div>
+                    <button type="button" id="refresh-all-btn" class="btn-refresh" title="Aktualisieren" aria-label="Aktualisieren">
+                        <i data-lucide="refresh-cw" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+
+                <div class="u-flex" data-direction="vertical" style="gap: var(--space--3); max-width: 900px; margin: 0 auto; width: 100%;">
+
+                    <!-- Bookings -->
+                    <section class="dashboard-card glass-panel">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="calendar-check" class="text-sage"></i> Buchungen
+                            </h2>
+                            <span id="bookings-count" class="badge badge-psychotherapie">0</span>
+                        </div>
+                        <div class="tab-controls mb-4 u-flex gap-sm" role="tablist">
+                            <button type="button" class="tab-btn active" data-scope="upcoming">Anstehend</button>
+                            <button type="button" class="tab-btn" data-scope="past">Vergangen</button>
+                            <button type="button" class="tab-btn" data-scope="cancelled">Abgesagt</button>
+                        </div>
+                        <div class="search-bar">
+                            <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+                            <input type="search" id="bookings-search" placeholder="Nach Name, E-Mail oder Anmerkung suchen …" class="search-input">
+                        </div>
+                        <div id="bookings-list" class="booking-list">
+                            <div class="empty-state">Lade Buchungen …</div>
+                        </div>
+                    </section>
+
+                    <!-- Release slots -->
+                    <section class="dashboard-card glass-panel">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="plus-circle" class="text-sage"></i> Termine freigeben
+                            </h2>
+                        </div>
+                        <div class="tab-controls mb-4 u-flex gap-sm">
+                            <button type="button" class="tab-btn active" data-panel="panel-single">Einzelner Termin</button>
+                            <button type="button" class="tab-btn" data-panel="panel-template">Wochen-Vorlage</button>
+                        </div>
+
+                        <div id="panel-single" class="tab-panel active">
+                            <form id="slot-form" class="u-grid gap-sm" data-large-columns="3" data-medium-columns="1" data-small-columns="1" style="align-items: end;">
+                                <div class="form-row m-0">
+                                    <label for="slot-date" class="input-label">Datum</label>
+                                    <input type="date" id="slot-date" required class="form-input-date">
+                                </div>
+                                <div class="form-row m-0">
+                                    <label for="slot-time" class="input-label">Uhrzeit</label>
+                                    <input type="time" id="slot-time" required step="300" class="form-input-date">
+                                </div>
+                                <div class="form-row m-0">
+                                    <label for="slot-service" class="input-label">Therapieform</label>
+                                    <select id="slot-service" required class="form-select service-select"></select>
+                                </div>
+                                <button type="submit" class="button-primary w-full" style="grid-column: 1 / -1; background-color: var(--swatch--sand); border-color: var(--swatch--sand);">Termin freigeben</button>
+                            </form>
+                        </div>
+
+                        <div id="panel-template" class="tab-panel">
+                            <p class="form-hint-admin mb-2">Die Vorlage beschreibt Ihre übliche Woche. Mit „Anwenden“ werden daraus freie Termine für die gewählten Wochen erzeugt – bestehende oder überschneidende Termine werden übersprungen.</p>
+                            <div id="template-list" class="slot-list mb-4"></div>
+                            <form id="template-form" class="u-grid gap-sm mb-4" data-large-columns="4" data-medium-columns="2" data-small-columns="1" style="align-items: end;">
+                                <div class="form-row m-0">
+                                    <label for="tpl-weekday" class="input-label">Wochentag</label>
+                                    <select id="tpl-weekday" class="form-select">
+                                        <option value="1">Montag</option><option value="2">Dienstag</option><option value="3">Mittwoch</option>
+                                        <option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option><option value="7">Sonntag</option>
+                                    </select>
+                                </div>
+                                <div class="form-row m-0">
+                                    <label for="tpl-time" class="input-label">Uhrzeit</label>
+                                    <input type="time" id="tpl-time" required step="300" class="form-input-date">
+                                </div>
+                                <div class="form-row m-0">
+                                    <label for="tpl-service" class="input-label">Therapieform</label>
+                                    <select id="tpl-service" class="form-select service-select"></select>
+                                </div>
+                                <button type="submit" class="btn-secondary" style="height: 44px;">Zur Vorlage hinzufügen</button>
+                            </form>
+                            <form id="apply-form" class="u-grid gap-sm" data-large-columns="3" data-medium-columns="1" data-small-columns="1" style="align-items: end; border-top: 1px dashed rgba(0,0,0,0.08); padding-top: 12px;">
+                                <div class="form-row m-0">
+                                    <label for="apply-date" class="input-label">Ab Woche (beliebiger Tag)</label>
+                                    <input type="date" id="apply-date" required class="form-input-date">
+                                </div>
+                                <div class="form-row m-0">
+                                    <label for="apply-weeks" class="input-label">Anzahl Wochen</label>
+                                    <select id="apply-weeks" class="form-select">
+                                        <option>1</option><option>2</option><option>3</option><option selected>4</option><option>6</option><option>8</option><option>12</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="button-primary w-full" style="background-color: var(--swatch--dark-text); border-color: var(--swatch--dark-text); color: #fff;">Vorlage anwenden</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Slots calendar -->
+                    <section class="dashboard-card glass-panel">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="clock" class="text-sage"></i> Freigegebene Termine
+                            </h2>
+                            <span id="slots-count" class="badge badge-psychotherapie">0</span>
+                        </div>
+                        <div class="admin-calendar-wrapper mb-4">
+                            <div class="calendar-header-bar">
+                                <button type="button" id="cal-prev" class="nav-month-btn" aria-label="Vorheriger Monat"><i data-lucide="chevron-left"></i></button>
+                                <h4 id="cal-month" class="u-text-style-main font-bold text-dark-text uppercase m-0 tracking-wider"></h4>
+                                <button type="button" id="cal-next" class="nav-month-btn" aria-label="Nächster Monat"><i data-lucide="chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-weekdays-header u-grid mb-2" style="grid-template-columns: repeat(7, 1fr);">
+                                <div>MO</div><div>DI</div><div>MI</div><div>DO</div><div>FR</div><div>SA</div><div>SO</div>
+                            </div>
+                            <div id="cal-days" class="calendar-days-grid"></div>
+                        </div>
+                        <h4 id="day-title" class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Termine am ausgewählten Tag</h4>
+                        <div id="day-slots" class="slot-list">
+                            <div class="empty-state">Bitte wählen Sie einen Tag im Kalender.</div>
+                        </div>
+                    </section>
+
+                    <!-- Settings -->
+                    <section class="dashboard-card glass-panel">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="settings" class="text-sage"></i> Einstellungen
+                            </h2>
+                        </div>
+
+                        <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Buchungsregeln</h3>
+                        <form id="settings-form" class="mb-6">
+                            <div class="settings-grid mb-4">
+                                <div>
+                                    <label for="set-cancel" class="input-label">Online-Absage bis … Std. vorher</label>
+                                    <input type="number" id="set-cancel" min="0" max="336" required class="form-input-date">
+                                    <p class="form-hint-admin">Laut Absageregelung derzeit 48 Std.</p>
+                                </div>
+                                <div>
+                                    <label for="set-notice" class="input-label">Buchbar frühestens … Std. vorher</label>
+                                    <input type="number" id="set-notice" min="0" max="336" required class="form-input-date">
+                                </div>
+                                <div>
+                                    <label for="set-horizon" class="input-label">Buchbar max. … Tage im Voraus</label>
+                                    <input type="number" id="set-horizon" min="7" max="365" required class="form-input-date">
+                                </div>
+                                <div>
+                                    <label for="set-retention" class="input-label">Daten löschen … Tage nach Termin</label>
+                                    <input type="number" id="set-retention" min="7" max="3650" required class="form-input-date">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-secondary">Regeln speichern</button>
+                        </form>
+
+                        <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Therapieformen &amp; Preise</h3>
+                        <div id="services-list" class="mb-6"></div>
+
+                        <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Kalender-Abo (.ics)</h3>
+                        <p class="form-hint-admin mb-2">Diese private Adresse in Apple Kalender, Outlook oder Thunderbird als „Kalender-Abonnement“ hinzufügen – gebuchte Termine erscheinen dann automatisch. Die Adresse enthält Namen und Kontaktdaten: bitte nicht weitergeben. Bei Verdacht einfach neu erzeugen (die alte Adresse funktioniert dann nicht mehr).</p>
+                        <div class="feed-box">
+                            <input type="text" id="feed-url" readonly class="form-input-date" placeholder="Noch keine Adresse erzeugt">
+                            <button type="button" id="feed-copy" class="btn-secondary">Kopieren</button>
+                            <button type="button" id="feed-new" class="btn-secondary">Neu erzeugen</button>
+                        </div>
+                    </section>
+
+                    <!-- Outbox (staging / log mode only) -->
+                    <section id="outbox-card" class="dashboard-card glass-panel hidden">
+                        <div class="card-header-sage">
+                            <h2 class="u-text-style-h3 text-dark-text m-0 u-flex gap-sm" data-align="center">
+                                <i data-lucide="mail" class="text-sage"></i> E-Mail-Ausgang (Testumgebung)
+                            </h2>
+                        </div>
+                        <p class="form-hint-admin mb-4">In der Testumgebung werden keine E-Mails verschickt. Hier sehen Sie, was Klient:innen und die Praxis erhalten würden.</p>
+                        <div id="outbox-list"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cancel booking dialog -->
+    <dialog id="cancel-dialog" class="admin-dialog">
+        <form method="dialog" id="cancel-form">
+            <h3 class="u-text-style-h4 text-dark-text mb-2">Buchung absagen</h3>
+            <p id="cancel-summary" class="u-text-style-small text-gray-600 mb-4"></p>
+            <label class="check-row"><input type="checkbox" id="cancel-notify" checked class="form-checkbox"> Klient:in per E-Mail informieren</label>
+            <label class="check-row"><input type="checkbox" id="cancel-release" checked class="form-checkbox"> Termin danach wieder online freigeben</label>
+            <div class="u-flex gap-sm" data-justify="flex-end" style="margin-top: 1rem;">
+                <button type="button" id="cancel-abort" class="btn-secondary">Abbrechen</button>
+                <button type="submit" id="cancel-confirm" class="btn-cancel">Absagen</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div id="toast" class="toast-notification" role="status" aria-live="polite">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="admin.js?v=1" defer></script>
+</body>
+
+</html>

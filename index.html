@@ -169,6 +169,7 @@
 
     <!-- CSS Frameworks & Custom Styles -->
     <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="booking.css?v=1">
 
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -190,7 +191,7 @@
                 <a href="#kontakt" class="nav-link">Kontakt</a>
             </div>
 
-            <a href="#kontakt" class="nav-cta-btn u-text-style-small u-weight-medium">
+            <a href="#kontakt" class="nav-cta-btn u-text-style-small u-weight-medium" data-open-booking>
                 Termin vereinbaren
             </a>
         </nav>
@@ -411,11 +412,34 @@
                             <div class="p-8">
                                 <h2 class="u-text-style-h2 text-dark-text mb-4">Kontakt</h2>
                                 <p class="u-text-style-main text-gray-600 leading-relaxed m-0">
-                                    Kontaktieren Sie mich gerne per E-Mail oder rufen Sie mich an.
+                                    Buchen Sie Ihren Termin direkt online oder kontaktieren Sie mich gerne per
+                                    E-Mail oder Telefon.
                                 </p>
                             </div>
 
                             <div class="u-flex pt-4 gap-lg-grid" data-direction="vertical">
+                                <!-- Online Booking -->
+                                <button type="button" data-open-booking
+                                    class="rounded-3xl u-flex group glass-panel p-8 border-t-green transition-all hover-lift contact-link"
+                                    data-align="center"
+                                    style="text-align: left; width: 100%; cursor: pointer; font: inherit; color: inherit;">
+                                    <div class="icon-circle bg-white shadow-sm text-gray-400 icon-circle-lg">
+                                        <i data-lucide="calendar"></i>
+                                    </div>
+                                    <div class="u-flex" data-direction="vertical" style="min-width: 0; flex: 1;">
+                                        <span
+                                            class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-1 label-xs">Terminbuchung</span>
+                                        <span class="u-text-style-main u-weight-medium text-dark-text">Jetzt online buchen</span>
+                                        <span class="text-gray-500 mt-2"
+                                            style="font-size: 0.85rem; line-height: 1.4;">Erstgespräch oder Folgetermin
+                                            für Psychotherapie, Paartherapie oder Spieltherapie.</span>
+                                    </div>
+                                    <div class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all"
+                                        style="margin-left: auto;">
+                                        <i data-lucide="arrow-right" class="icon-sm"></i>
+                                    </div>
+                                </button>
+
                                 <!-- Email -->
                                 <a href="mailto:info@psychotherapieberger.at"
                                     class="rounded-3xl u-flex group glass-panel p-8 border-t-yellow transition-all hover-lift contact-link"
@@ -582,6 +606,39 @@
                                         Anschlussfragen bei mir gespeichert. Diese Daten gebe ich nicht ohne Ihre
                                         Einwilligung weiter. Im Rahmen einer therapeutischen Beziehung unterliege ich der
                                         strengen gesetzlichen Verschwiegenheitspflicht nach dem Psychotherapiegesetz.</p>
+                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Online-Terminbuchung</strong><br>
+                                        Wenn Sie über diese Website einen Termin buchen, verarbeite ich Ihren Namen, Ihre
+                                        E-Mail-Adresse, optional Ihre Telefonnummer und Anmerkungen sowie den gewählten Termin,
+                                        die Therapieform und die Art des Termins (Erstgespräch oder Folgetermin). Da bereits die
+                                        Buchung eines Psychotherapietermins Rückschlüsse auf Ihre Gesundheit zulassen kann, erfolgt
+                                        die Verarbeitung auf Grundlage Ihrer ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a
+                                        sowie Art. 6 Abs. 1 lit. a und b DSGVO). Sie können Ihre Einwilligung jederzeit mit
+                                        Wirkung für die Zukunft per E-Mail widerrufen. Bitte geben Sie in den Anmerkungen keine
+                                        ausführlichen Gesundheitsinformationen an.<br>
+                                        Die Buchungsdaten werden automatisch spätestens 90 Tage nach dem Termin gelöscht.
+                                        Davon unberührt bleibt die gesetzlich vorgeschriebene Dokumentation im Rahmen einer
+                                        Psychotherapie, die getrennt von diesem Buchungssystem geführt wird.</p>
+                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Auftragsverarbeiter</strong><br>
+                                        Das Buchungssystem wird bei Cloudflare, Inc. (101 Townsend St., San Francisco, CA 94107,
+                                        USA) betrieben. Die Buchungsdaten werden in einer Datenbank gespeichert, die vertraglich
+                                        auf Rechenzentren in der Europäischen Union beschränkt ist. Bei der Übertragung über das
+                                        weltweite Netzwerk von Cloudflare ist eine Verarbeitung außerhalb der EU nicht
+                                        ausgeschlossen; Cloudflare ist nach dem EU-U.S. Data Privacy Framework zertifiziert, zudem
+                                        wurden Standardvertragsklauseln vereinbart. Bestätigungs- und Absage-E-Mails werden über
+                                        den E-Mail-Server meines Hosting-Anbieters netcup GmbH (Karlsruhe, Deutschland)
+                                        versendet. Mit beiden Anbietern besteht ein Vertrag zur Auftragsverarbeitung (Art. 28
+                                        DSGVO).</p>
+                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Schutz vor Missbrauch
+                                            (Cloudflare Turnstile)</strong><br>
+                                        Um das Buchungsformular vor automatisierten Anfragen zu schützen, wird beim Öffnen des
+                                        Formulars der Dienst Cloudflare Turnstile geladen. Dabei werden technische Daten Ihres
+                                        Browsers und Ihre IP-Adresse an Cloudflare übermittelt, um zu prüfen, ob die Anfrage
+                                        von einem Menschen stammt. Es werden keine Cookies zu Werbezwecken gesetzt. Grundlage ist
+                                        mein berechtigtes Interesse an einem sicheren Buchungssystem (Art. 6 Abs. 1 lit. f
+                                        DSGVO).</p>
+                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Website-Statistik</strong><br>
+                                        Diese Website verwendet Cloudflare Web Analytics, eine cookielose Reichweitenmessung,
+                                        die keine personenbezogenen Profile erstellt (Art. 6 Abs. 1 lit. f DSGVO).</p>
                                     <p class="mb-0"><strong class="u-weight-bold text-dark-text">Ihre Rechte</strong><br>
                                         Ihnen stehen grundsätzlich die Rechte auf Auskunft, Berichtigung, Löschung,
                                         Einschränkung, Datenübertragbarkeit, Widerruf und Widerspruch zu. Wenn Sie glauben,
@@ -825,6 +882,8 @@
             });
         });
     </script>
+    <!-- Online-Terminbuchung (Cloudflare Worker API, same origin) -->
+    <script src="booking.js?v=1" defer></script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "175595f3d9af44c1b7a6c2ea6a5c6384"}'></script>
     <!-- End Cloudflare Web Analytics -->

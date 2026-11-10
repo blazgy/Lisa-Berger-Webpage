@@ -1,0 +1,341 @@
+import { clearSessionCookie, createSessionCookie, isAuthenticated, verifyPassword } from "../auth";
+import {
+  cancelBooking,
+  createSlot,
+  getBooking,
+  getService,
+  getSettings,
+  hasOverlap,
+  listServices,
+  NUMERIC_SETTING_KEYS,
+  setSetting,
+  settingBounds,
+} from "../data";
+import { clientCancellationEmail, kindLabel, sendEmail } from "../email";
+import type { Booking, Env, Service } from "../env";
+import { clientIp, enforceRateLimit, HttpError, json, newId, randomToken, readJson } from "../http";
+import { buildCalendar, PRACTICE_ADDRESS } from "../ics";
+import { addDays, DATE_RE, mondayOf, TIME_RE, viennaDate, viennaTime, viennaToUtc } from "../time";
+import { optionalString, requireString, validateId, validateInt } from "../validate";
+
+
+// ---------------------------------------------------------------------------
+// Session
+// ---------------------------------------------------------------------------
+
+export async function login(request: Request, env: Env): Promise<Response> {
+  const origin = request.headers.get("origin");
+  if (!origin || origin !== new URL(request.url).origin) throw new HttpError(403, "Ungültige Herkunft der Anfrage.", "bad_origin");
+  await enforceRateLimit(env.LOGIN_LIMITER, `login:${clientIp(request)}`);
+  const { password } = await readJson<{ password?: unknown }>(request);
+  if (typeof password !== "string" || password.length > 200 || !(await verifyPassword(password, env.ADMIN_PASSWORD_HASH))) {
+    throw new HttpError(401, "Das Passwort ist nicht korrekt.", "bad_password");
+  }
+  return json({ ok: true }, 200, { "set-cookie": await createSessionCookie(env) });
+}
+
+export function logout(): Response {
+  return json({ ok: true }, 200, { "set-cookie": clearSessionCookie() });
+}
+
+export async function session(request: Request, env: Env): Promise<Response> {
+  return json({ authenticated: await isAuthenticated(request, env), environment: env.ENVIRONMENT, emailMode: env.EMAIL_MODE });
+}
+
+// ---------------------------------------------------------------------------
+// Bookings
+// ---------------------------------------------------------------------------
+
+function adminBooking(b: Booking & { service_name?: string }) {
+  return {
+    id: b.id,
+    serviceId: b.service_id,
+    serviceName: b.service_name ?? b.service_id,
+    sessionKind: b.session_kind,
+    sessionKindLabel: kindLabel(b.session_kind),
+    start: new Date(b.start_at).toISOString(),
+    end: new Date(b.end_at).toISOString(),
+    date: viennaDate(b.start_at),
+    time: viennaTime(b.start_at),
+    name: b.name,
+    email: b.email,
+    phone: b.phone,
+    notes: b.notes,
+    status: b.status,
+    cancelledBy: b.cancelled_by,
+    cancelledAt: b.cancelled_at ? new Date(b.cancelled_at).toISOString() : null,
+    createdAt: new Date(b.created_at).toISOString(),
+  };
+}
+
+export async function listBookings(request: Request, env: Env): Promise<Response> {
+  const scope = new URL(request.url).searchParams.get("scope") || "upcoming";
+  const now = Date.now();
+  const where =
+    scope === "past"
+      ? "b.status = 'confirmed' AND b.start_at < ?1 ORDER BY b.start_at DESC"
+      : scope === "cancelled"
+        ? "b.status = 'cancelled' AND ?1 = ?1 ORDER BY b.cancelled_at DESC"
+        : "b.status = 'confirmed' AND b.start_at >= ?1 ORDER BY b.start_at ASC";
+  const { results } = await env.DB.prepare(
+    `SELECT b.*, v.name AS service_name FROM bookings b LEFT JOIN services v ON v.id = b.service_id WHERE ${where} LIMIT 500`,
+  )
+    .bind(now)
+    .all<Booking & { service_name: string }>();
+  return json(results.map(adminBooking));
+}
+
+export async function adminCancelBooking(request: Request, env: Env, ctx: ExecutionContext, id: string): Promise<Response> {
+  const body = await readJson<{ notify?: unknown; release?: unknown }>(request);
+  const booking = await getBooking(env, validateId(id));
+  if (!booking) throw new HttpError(404, "Buchung nicht gefunden.", "not_found");
+  if (booking.status !== "confirmed") throw new HttpError(409, "Diese Buchung ist bereits abgesagt.", "already_cancelled");
+  const release = body.release !== false;
+  if (!(await cancelBooking(env, booking, "admin", release))) {
+    throw new HttpError(409, "Diese Buchung ist bereits abgesagt.", "already_cancelled");
+  }
+  if (body.notify !== false) {
+    const service = (await getService(env, booking.service_id)) as Service;
+    ctx.waitUntil(sendEmail(env, clientCancellationEmail(env, booking, service, true)));
+  }
+  return json({ ok: true });
+}
+
+export async function bookingIcs(env: Env, id: string): Promise<Response> {
+  const booking = await getBooking(env, validateId(id));
+  if (!booking) throw new HttpError(404, "Buchung nicht gefunden.", "not_found");
+  const service = await getService(env, booking.service_id);
+  const ics = buildCalendar([
+    {
+      uid: `${booking.id}@psychotherapieberger.at`,
+      start: booking.start_at,
+      end: booking.end_at,
+      summary: `${service?.name ?? booking.service_id}: ${booking.name}`,
+      description: [kindLabel(booking.session_kind), booking.phone ? `Tel. ${booking.phone}` : "", booking.email].filter(Boolean).join("\n"),
+      location: PRACTICE_ADDRESS,
+      status: booking.status === "cancelled" ? "CANCELLED" : "CONFIRMED",
+    },
+  ]);
+  return new Response(ics, {
+    headers: {
+      "content-type": "text/calendar; charset=utf-8",
+      "content-disposition": `attachment; filename="termin-${viennaDate(booking.start_at)}.ics"`,
+      "cache-control": "no-store",
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Slots
+// ---------------------------------------------------------------------------
+
+export async function listSlots(request: Request, env: Env): Promise<Response> {
+  const params = new URL(request.url).searchParams;
+  const from = params.get("from") || viennaDate(Date.now());
+  const to = params.get("to") || addDays(from, 62);
+  if (!DATE_RE.test(from) || !DATE_RE.test(to)) throw new HttpError(400, "Ungültiger Zeitraum.", "invalid_range");
+  const { results } = await env.DB.prepare(
+    `SELECT s.*, v.name AS service_name, b.name AS client_name FROM slots s
+     LEFT JOIN services v ON v.id = s.service_id
+     LEFT JOIN bookings b ON b.id = s.booking_id AND b.status = 'confirmed'
+     WHERE s.start_at >= ? AND s.start_at < ? ORDER BY s.start_at`,
+  )
+    .bind(viennaToUtc(from, "00:00"), viennaToUtc(addDays(to, 1), "00:00"))
+    .all<{ id: string; service_id: string; service_name: string; start_at: number; end_at: number; status: string; client_name: string | null }>();
+  return json(
+    results.map((s) => ({
+      id: s.id,
+      serviceId: s.service_id,
+      serviceName: s.service_name,
+      date: viennaDate(s.start_at),
+      time: viennaTime(s.start_at),
+      endTime: viennaTime(s.end_at),
+      start: new Date(s.start_at).toISOString(),
+      status: s.status,
+      clientName: s.client_name,
+    })),
+  );
+}
+
+async function activeServiceOrThrow(env: Env, id: unknown): Promise<Service> {
+  const service = await getService(env, validateId(id, "Therapieform"));
+  if (!service) throw new HttpError(400, "Unbekannte Therapieform.", "invalid_service");
+  return service;
+}
+
+function parseDateTime(date: unknown, time: unknown): number {
+  if (typeof date !== "string" || !DATE_RE.test(date) || typeof time !== "string" || !TIME_RE.test(time)) {
+    throw new HttpError(400, "Bitte geben Sie ein gültiges Datum und eine gültige Uhrzeit an.", "invalid_datetime");
+  }
+  try {
+    return viennaToUtc(date, time);
+  } catch {
+    throw new HttpError(400, "Bitte geben Sie ein gültiges Datum an.", "invalid_datetime");
+  }
+}
+
+export async function addSlot(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const service = await activeServiceOrThrow(env, body.serviceId);
+  const slot = await createSlot(env, service, parseDateTime(body.date, body.time));
+  return json({ id: slot.id }, 201);
+}
+
+export async function deleteSlot(env: Env, id: string): Promise<Response> {
+  const result = await env.DB.prepare("DELETE FROM slots WHERE id = ? AND status = 'available'").bind(validateId(id)).run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    throw new HttpError(409, "Gebuchte Slots können nicht gelöscht werden – bitte sagen Sie die Buchung ab.", "slot_booked");
+  }
+  return json({ ok: true });
+}
+
+// ---------------------------------------------------------------------------
+// Weekly template
+// ---------------------------------------------------------------------------
+
+export async function getTemplate(env: Env): Promise<Response> {
+  const { results } = await env.DB.prepare(
+    `SELECT t.id, t.weekday, t.time, t.service_id, v.name AS service_name FROM template_items t
+     LEFT JOIN services v ON v.id = t.service_id ORDER BY t.weekday, t.time`,
+  ).all<{ id: string; weekday: number; time: string; service_id: string; service_name: string }>();
+  return json(results.map((t) => ({ id: t.id, weekday: t.weekday, time: t.time, serviceId: t.service_id, serviceName: t.service_name })));
+}
+
+export async function addTemplateItem(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const weekday = validateInt(body.weekday, "Wochentag", 1, 7);
+  if (typeof body.time !== "string" || !TIME_RE.test(body.time)) throw new HttpError(400, "Ungültige Uhrzeit.", "invalid_time");
+  const service = await activeServiceOrThrow(env, body.serviceId);
+  const id = newId();
+  await env.DB.prepare("INSERT INTO template_items (id, weekday, time, service_id) VALUES (?, ?, ?, ?)")
+    .bind(id, weekday, body.time, service.id)
+    .run();
+  return json({ id }, 201);
+}
+
+export async function deleteTemplateItem(env: Env, id: string): Promise<Response> {
+  await env.DB.prepare("DELETE FROM template_items WHERE id = ?").bind(validateId(id)).run();
+  return json({ ok: true });
+}
+
+export async function applyTemplate(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (typeof body.date !== "string" || !DATE_RE.test(body.date)) throw new HttpError(400, "Bitte wählen Sie eine Woche.", "invalid_date");
+  const weeks = validateInt(body.weeks ?? 1, "Anzahl Wochen", 1, 12);
+  const { results: items } = await env.DB.prepare("SELECT weekday, time, service_id FROM template_items").all<{
+    weekday: number;
+    time: string;
+    service_id: string;
+  }>();
+  if (items.length === 0) throw new HttpError(400, "Die Wochen-Vorlage ist leer.", "empty_template");
+  const services = new Map((await listServices(env, false)).map((s) => [s.id, s]));
+  const monday = mondayOf(body.date);
+  const now = Date.now();
+  let created = 0;
+  let skipped = 0;
+  for (let w = 0; w < weeks; w++) {
+    for (const item of items) {
+      const service = services.get(item.service_id);
+      const date = addDays(monday, w * 7 + item.weekday - 1);
+      const start = viennaToUtc(date, item.time);
+      if (!service || start <= now || (await hasOverlap(env, start, start + service.duration_min * 60_000))) {
+        skipped++;
+        continue;
+      }
+      await env.DB.prepare(
+        "INSERT INTO slots (id, service_id, start_at, end_at, status, booking_id, created_at) VALUES (?, ?, ?, ?, 'available', NULL, ?)",
+      )
+        .bind(newId(), service.id, start, start + service.duration_min * 60_000, now)
+        .run();
+      created++;
+    }
+  }
+  return json({ created, skipped, weekOf: monday });
+}
+
+// ---------------------------------------------------------------------------
+// Services & settings
+// ---------------------------------------------------------------------------
+
+export async function getAdminServices(env: Env): Promise<Response> {
+  return json(
+    (await listServices(env, false)).map((s) => ({
+      id: s.id,
+      name: s.name,
+      durationMin: s.duration_min,
+      priceEur: s.price_eur,
+      description: s.description,
+      active: s.active === 1,
+    })),
+  );
+}
+
+export async function updateService(request: Request, env: Env, id: string): Promise<Response> {
+  const service = await getService(env, validateId(id));
+  if (!service) throw new HttpError(404, "Therapieform nicht gefunden.", "not_found");
+  const body = await readJson(request);
+  const name = requireString(body.name ?? service.name, "Name", 60);
+  const duration = validateInt(body.durationMin ?? service.duration_min, "Dauer", 10, 240);
+  const price = validateInt(body.priceEur ?? service.price_eur, "Preis", 0, 2000);
+  const description = optionalString(body.description ?? service.description, "Beschreibung", 200) ?? "";
+  const active = body.active === undefined ? service.active : body.active ? 1 : 0;
+  await env.DB.prepare("UPDATE services SET name = ?, duration_min = ?, price_eur = ?, description = ?, active = ? WHERE id = ?")
+    .bind(name, duration, price, description, active, service.id)
+    .run();
+  return json({ ok: true });
+}
+
+function feedUrl(env: Env, token: string | null): string | null {
+  return token ? `${env.PUBLIC_BASE_URL.replace(/\/$/, "")}/api/calendar/${token}.ics` : null;
+}
+
+export async function getAdminSettings(env: Env): Promise<Response> {
+  const s = await getSettings(env);
+  return json({
+    cancelWindowHours: s.cancel_window_hours,
+    minNoticeHours: s.min_notice_hours,
+    bookingHorizonDays: s.booking_horizon_days,
+    retentionDays: s.retention_days,
+    calendarFeedUrl: feedUrl(env, s.calendar_feed_token),
+  });
+}
+
+const SETTINGS_BODY_KEYS: Record<string, (typeof NUMERIC_SETTING_KEYS)[number]> = {
+  cancelWindowHours: "cancel_window_hours",
+  minNoticeHours: "min_notice_hours",
+  bookingHorizonDays: "booking_horizon_days",
+  retentionDays: "retention_days",
+};
+
+export async function updateSettings(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  for (const [bodyKey, dbKey] of Object.entries(SETTINGS_BODY_KEYS)) {
+    if (body[bodyKey] === undefined) continue;
+    const { min, max } = settingBounds(dbKey);
+    await setSetting(env, dbKey, String(validateInt(body[bodyKey], bodyKey, min, max)));
+  }
+  return getAdminSettings(env);
+}
+
+export async function regenerateFeed(env: Env): Promise<Response> {
+  const token = randomToken(24);
+  await setSetting(env, "calendar_feed_token", token);
+  return json({ calendarFeedUrl: feedUrl(env, token) });
+}
+
+export async function getOutbox(env: Env): Promise<Response> {
+  const { results } = await env.DB.prepare(
+    "SELECT id, created_at, to_addr, subject, body_html, status, error FROM email_log ORDER BY created_at DESC LIMIT 50",
+  ).all<{ id: string; created_at: number; to_addr: string; subject: string; body_html: string | null; status: string; error: string | null }>();
+  return json(
+    results.map((r) => ({
+      id: r.id,
+      createdAt: new Date(r.created_at).toISOString(),
+      to: r.to_addr,
+      subject: r.subject,
+      html: r.body_html,
+      status: r.status,
+      error: r.error,
+    })),
+  );
+}

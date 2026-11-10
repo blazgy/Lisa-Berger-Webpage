@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "booking-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "booking", "run", "dev", "--", "--port", "8787"],
+      "port": 8787
+    }
+  ]
+}
