@@ -101,7 +101,6 @@
       $("env-badge").textContent = session.environment === "staging" ? "Testumgebung" : "Lokal";
       $("env-badge").classList.remove("hidden");
     }
-    $("outbox-card").classList.toggle("hidden", session.emailMode !== "log");
     refreshIcons();
     await loadAll();
   }
@@ -129,7 +128,7 @@
 
   async function loadAll() {
     await Promise.all([loadServices(), loadSettings()]);
-    await Promise.all([loadBookings(), loadSlots(), loadTemplate(), loadOutbox()]);
+    await Promise.all([loadBookings(), loadSlots(), loadTemplate(), loadEmail(), loadOutbox()]);
   }
 
   $("refresh-all-btn").addEventListener("click", () => run(loadAll, "Aktualisiert"));
@@ -429,19 +428,190 @@
     renderCalendar();
   });
 
-  // ------------------------------------------------------------------ outbox
+  // ------------------------------------------------------------------ e-mail
+
+  const EMAIL_KIND_LABEL = {
+    client_confirmation: "Terminbestätigung",
+    client_reminder: "Erinnerung",
+    client_cancellation: "Absagebestätigung",
+    practice_new: "Neue Buchung (Praxis)",
+    practice_cancellation: "Online-Absage (Praxis)",
+    test: "Test-E-Mail",
+  };
+  const EMAIL_STATUS = {
+    sent: ["verschickt", "status-sent"],
+    pending: ["wird erneut versucht", "status-pending"],
+    sending: ["wird gesendet", "status-pending"],
+    failed: ["fehlgeschlagen", "status-failed"],
+    blocked: ["nicht verschickt (Test)", "status-muted"],
+    logged: ["nur gespeichert", "status-muted"],
+  };
+  const fmtDateTime = (iso) => new Date(iso).toLocaleString("de-AT", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Vienna" });
+
+  function renderEmailStatus(st) {
+    let tone = "ok";
+    let text;
+    if (st.mode !== "smtp") {
+      tone = "info";
+      text = "Testbetrieb: Es werden keine E-Mails verschickt. Sie erscheinen nur im Versandprotokoll unten.";
+    } else if (!st.smtpConfigured) {
+      tone = "warn";
+      text = `Der Versand ist eingeschaltet, aber die Zugangsdaten für ${st.from} fehlen. E-Mails können nicht zugestellt werden.`;
+    } else if (st.environment !== "production") {
+      tone = "info";
+      text = `Testumgebung: E-Mails werden über ${st.from} verschickt – aber nur an die Test-Empfänger. Alle anderen erscheinen nur im Versandprotokoll.`;
+    } else {
+      text = `Automatischer Versand aktiv über ${st.from}. Fehlgeschlagene E-Mails werden bis zu 3-mal neu versucht.`;
+    }
+    $("email-status").className = `email-status email-status-${tone} mb-6`;
+    $("email-status").replaceChildren(icon(tone === "warn" ? "triangle-alert" : tone === "info" ? "info" : "circle-check", 18), h("span", null, text));
+    refreshIcons();
+  }
+
+  function fillEmailForm(cfg, isProduction) {
+    $("em-sender").value = cfg.senderName;
+    $("em-reply").value = cfg.replyTo;
+    $("em-notify").value = cfg.notifyTo.join(", ");
+    $("em-reminder-hours").value = cfg.reminderHours;
+    $("em-signature").value = cfg.signature;
+    $("em-confirmation-note").value = cfg.confirmationNote;
+    $("em-reminder-note").value = cfg.reminderNote;
+    document.querySelectorAll("#email-form [data-kind]").forEach((cb) => { cb.checked = !!cfg.enabled[cb.dataset.kind]; });
+    $("em-test-recipients-box").classList.toggle("hidden", isProduction);
+    if (!isProduction) $("em-test-recipients").value = (cfg.testRecipients || []).join(", ");
+  }
+
+  function emailEnabledDraft() {
+    const enabled = {};
+    document.querySelectorAll("#email-form [data-kind]").forEach((cb) => { enabled[cb.dataset.kind] = cb.checked; });
+    return enabled;
+  }
+
+  function emailDraft() {
+    const draft = {
+      senderName: $("em-sender").value,
+      replyTo: $("em-reply").value,
+      notifyTo: $("em-notify").value,
+      reminderHours: Number($("em-reminder-hours").value),
+      signature: $("em-signature").value,
+      confirmationNote: $("em-confirmation-note").value,
+      reminderNote: $("em-reminder-note").value,
+      enabled: emailEnabledDraft(),
+    };
+    if (!$("em-test-recipients-box").classList.contains("hidden")) draft.testRecipients = $("em-test-recipients").value;
+    return draft;
+  }
+
+  async function loadEmail() {
+    const data = await api("/api/admin/email");
+    renderEmailStatus(data.status);
+    fillEmailForm(data.settings, data.status.environment === "production");
+    await renderPreview();
+  }
+
+  $("email-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("email-form-error");
+    err.classList.add("hidden");
+    try {
+      const data = await api("/api/admin/email", "PUT", emailDraft());
+      fillEmailForm(data.settings, data.status.environment === "production");
+      toast("E-Mail-Einstellungen gespeichert");
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.classList.remove("hidden");
+    }
+  });
+
+  let previewTimer;
+  let previewSeq = 0;
+  async function renderPreview() {
+    const seq = ++previewSeq;
+    const type = $("em-preview-type").value;
+    // Only the fields that change the content; incomplete addresses while typing must not block it.
+    const settings = {
+      signature: $("em-signature").value,
+      confirmationNote: $("em-confirmation-note").value,
+      reminderNote: $("em-reminder-note").value,
+      enabled: emailEnabledDraft(),
+    };
+    const hours = Number($("em-reminder-hours").value);
+    if (Number.isInteger(hours) && hours >= 2 && hours <= 72) settings.reminderHours = hours;
+    try {
+      const p = await api("/api/admin/email/preview", "POST", { type, settings });
+      if (seq !== previewSeq) return;
+      $("em-preview-subject").textContent = `Betreff: ${p.subject}${p.enabled ? "" : " – diese E-Mail ist derzeit ausgeschaltet"}`;
+      $("em-preview-frame").srcdoc = p.html;
+    } catch (ex) {
+      if (seq === previewSeq) $("em-preview-subject").textContent = ex.message;
+    }
+  }
+  const schedulePreview = () => { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 400); };
+  $("email-form").addEventListener("input", schedulePreview);
+  $("email-form").addEventListener("change", schedulePreview);
+  $("em-preview-type").addEventListener("change", renderPreview);
+
+  $("email-test-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = $("em-test-btn");
+    const out = $("em-test-result");
+    btn.disabled = true;
+    out.textContent = "Wird gesendet …";
+    try {
+      const r = await api("/api/admin/email/test", "POST", { to: $("em-test-to").value.trim() });
+      const messages = {
+        sent: `Verschickt an ${r.to}. Bitte den Posteingang (und den Spam-Ordner) prüfen.`,
+        logged: `Testbetrieb: nicht verschickt, nur im Versandprotokoll gespeichert.`,
+        pending: `Zustellung an ${r.to} fehlgeschlagen: ${r.error || "unbekannter Fehler"}. Es wird automatisch erneut versucht.`,
+        failed: `Zustellung an ${r.to} fehlgeschlagen: ${r.error || "unbekannter Fehler"}.`,
+      };
+      out.textContent = messages[r.status] || r.status;
+      out.classList.toggle("text-red-500", r.status === "pending" || r.status === "failed");
+    } catch (ex) {
+      out.textContent = ex.message;
+      out.classList.add("text-red-500");
+    } finally {
+      btn.disabled = false;
+      loadOutbox().catch(() => {});
+    }
+  });
 
   async function loadOutbox() {
-    if ($("outbox-card").classList.contains("hidden")) return;
-    const mails = await api("/api/admin/outbox");
+    const data = await api("/api/admin/outbox");
     $("outbox-list").replaceChildren(
-      ...(mails.length
-        ? mails.map((m) => {
-            const frame = h("iframe", { sandbox: "", title: m.subject, loading: "lazy" });
-            frame.srcdoc = m.html || "<p>(kein Inhalt gespeichert)</p>";
+      ...(data.items.length
+        ? data.items.map((m) => {
+            const [label, cls] = EMAIL_STATUS[m.status] || [m.status, "status-muted"];
+            const details = [];
+            if (m.status === "pending" && m.nextAttemptAt) {
+              details.push(h("p", { class: "form-hint-admin" }, `Versuch ${m.attempts} von ${data.maxAttempts} fehlgeschlagen. Nächster Versuch ca. ${fmtDateTime(m.nextAttemptAt)}.`));
+            }
+            if (m.sentAt) details.push(h("p", { class: "form-hint-admin" }, `Zugestellt an den Mailserver: ${fmtDateTime(m.sentAt)}`));
+            if (m.error) details.push(h("p", { class: "outbox-error" }, m.error));
+            if (m.canResend) {
+              details.push(h("button", {
+                type: "button",
+                class: "btn-secondary",
+                onclick: (ev) => run(async () => {
+                  ev.target.disabled = true;
+                  const r = await api(`/api/admin/outbox/${encodeURIComponent(m.id)}/resend`, "POST", {});
+                  await loadOutbox();
+                  if (r.status !== "sent") throw new Error(`Erneut fehlgeschlagen: ${r.error || r.status}`);
+                }, "E-Mail wurde verschickt"),
+              }, "Erneut senden"));
+            }
+            if (m.html) {
+              const frame = h("iframe", { sandbox: "", title: m.subject, loading: "lazy" });
+              frame.srcdoc = m.html;
+              details.push(frame);
+            } else if (m.status === "sent") {
+              details.push(h("p", { class: "form-hint-admin" }, "Aus Datenschutzgründen wird der Inhalt verschickter E-Mails nicht gespeichert."));
+            }
             return h("details", { class: "outbox-item" },
-              h("summary", null, h("strong", null, m.subject), ` → ${m.to} · ${new Date(m.createdAt).toLocaleString("de-AT")}`),
-              frame);
+              h("summary", null,
+                h("span", { class: `badge ${cls}` }, label), " ",
+                h("strong", null, EMAIL_KIND_LABEL[m.kind] || m.subject), ` → ${m.to} · ${fmtDateTime(m.createdAt)}`),
+              h("div", { class: "outbox-body" }, details));
           })
         : [h("div", { class: "empty-state" }, "Noch keine E-Mails.")]),
     );

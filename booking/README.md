@@ -18,6 +18,7 @@ booking/
 - Psychotherapie, Paartherapie, Spieltherapie – names, duration, price and "online bookable" editable in the dashboard
 - Erstgespräch or Folgetermin chosen by the client
 - Client confirmation e-mail with `.ics` attachment and a private link to view/cancel (`termin.html`)
+- Reminder e-mail N hours before the appointment (default 24, only for bookings made well in advance)
 - Self-service cancellation until a configurable number of hours before the appointment (default 48 h)
 - Practice notification e-mails, admin cancellation (optionally re-releasing the slot)
 - Weekly template applied to 1–12 weeks, overlap protection, atomic double-booking protection
@@ -38,8 +39,20 @@ npm run dev                      # http://localhost:8787 (admin: /admin.html)
 npm test
 ```
 
-In development and staging `EMAIL_MODE` is `log`: e-mails are not sent but shown in the dashboard
-("E-Mail-Ausgang").
+## E-mail
+
+E-mails are sent from `termine@psychotherapieberger.at` through the netcup mail server (SMTP, port 465).
+SPF, DKIM (`key1`/`key2`) and DMARC pass for this address, so netcup signs and delivers like a normal
+mail client would. Replies go to the reply-to address set in the dashboard (default `info@`).
+
+- `EMAIL_MODE` `log` (local development): nothing is sent; e-mails appear in the dashboard's Versandprotokoll.
+- `EMAIL_MODE` `smtp` (staging, production): real sending with secrets `SMTP_USER` / `SMTP_PASSWORD`.
+  On staging only addresses on the dashboard's "Test-Empfänger" list receive e-mails; all others are logged as blocked.
+- Every e-mail is queued and tried immediately; failures are retried by the 10-minute cron job
+  (3 attempts: now, +5 min, +30 min), then shown as failed with an "Erneut senden" button.
+  After delivery only metadata is kept; the e-mail log is deleted after 30 days.
+- The same cron job sends the reminders. Settings (sender name, reply-to, practice addresses, which
+  e-mails are sent, signature and extra texts, reminder lead time) are edited in the dashboard's E-Mail section.
 
 ## Staging
 
@@ -57,7 +70,7 @@ npx wrangler secret put ADMIN_PASSWORD_HASH --env staging   # to change the stag
 1. Decide where production runs (Lisa's own Cloudflare account is recommended for GDPR – she is the controller).
 2. Create the production D1 with `--jurisdiction eu`, add an `env.production` block (copy of staging with `ENVIRONMENT: "production"`, `EMAIL_MODE: "smtp"`).
 3. Create a real Turnstile widget for the production hostname; set `TURNSTILE_SITE_KEY` (var) and `TURNSTILE_SECRET` (secret).
-4. Secrets: `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `SMTP_USER`, `SMTP_PASSWORD` (netcup mailbox).
+4. Secrets: `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `SMTP_USER`, `SMTP_PASSWORD` (netcup mailbox `termine@`).
 5. Hosting: either move the domain's DNS to Cloudflare and serve the whole site from the Worker, or keep netcup
    for the site, run the API on a subdomain and set `ALLOWED_ORIGINS` + `data-api` on the `booking.js` script tag.
 6. Review/approve the Datenschutzerklärung text, sign the DPAs (Cloudflare, netcup).

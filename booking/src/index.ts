@@ -1,10 +1,14 @@
 import { requireAdmin } from "./auth";
 import type { Env } from "./env";
+import { processEmailQueue } from "./email";
 import { errorResponse, HttpError } from "./http";
+import { sendDueReminders } from "./reminders";
 import * as admin from "./routes/admin";
 import * as pub from "./routes/public";
 
 const HOUR = 3_600_000;
+/** Must match the daily trigger in wrangler.jsonc; the other trigger runs the e-mail jobs. */
+const CLEANUP_CRON = "15 3 * * *";
 
 // Content-Security-Policy for all HTML pages served by the Worker.
 const CSP = [
@@ -97,7 +101,12 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, path:
     if (method === "GET" && path === "/api/admin/settings") return admin.getAdminSettings(env);
     if (method === "PUT" && path === "/api/admin/settings") return admin.updateSettings(request, env);
     if (method === "POST" && path === "/api/admin/calendar-feed") return admin.regenerateFeed(env);
+    if (method === "GET" && path === "/api/admin/email") return admin.getEmailConfig(env);
+    if (method === "PUT" && path === "/api/admin/email") return admin.updateEmailConfig(request, env);
+    if (method === "POST" && path === "/api/admin/email/test") return admin.sendTestEmail(request, env);
+    if (method === "POST" && path === "/api/admin/email/preview") return admin.getEmailPreview(request, env);
     if (method === "GET" && path === "/api/admin/outbox") return admin.getOutbox(env);
+    if (method === "POST" && (m = path.match(/^\/api\/admin\/outbox\/([^/]+)\/resend$/))) return admin.resendOutboxEmail(env, m[1]);
   }
   throw new HttpError(404, "Nicht gefunden.", "not_found");
 }
@@ -154,7 +163,17 @@ export default {
     return withSecurityHeaders(response, env);
   },
 
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(cleanup(env));
+  async scheduled(event, env, ctx) {
+    if (event.cron === CLEANUP_CRON) {
+      ctx.waitUntil(cleanup(env));
+      return;
+    }
+    // Every 10 minutes: retry due e-mails, then send due appointment reminders.
+    ctx.waitUntil(
+      (async () => {
+        await processEmailQueue(env);
+        await sendDueReminders(env);
+      })(),
+    );
   },
 } satisfies ExportedHandler<Env>;

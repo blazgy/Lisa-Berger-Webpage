@@ -643,3 +643,111 @@
     color: #6b7280;
     margin-top: 4px;
 }
+
+/* E-Mail section */
+.email-status {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    border: 1px solid transparent;
+}
+
+.email-status svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.email-status-ok {
+    background: rgba(179, 218, 182, 0.18);
+    border-color: rgba(179, 218, 182, 0.6);
+    color: #166534;
+}
+
+.email-status-info {
+    background: rgba(245, 223, 156, 0.2);
+    border-color: rgba(245, 223, 156, 0.7);
+    color: #713f12;
+}
+
+.email-status-warn {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.email-toggles .check-row span {
+    line-height: 1.4;
+}
+
+.email-texts {
+    display: grid;
+    gap: 12px;
+}
+
+.email-texts textarea {
+    resize: vertical;
+    min-height: 4.5rem;
+    line-height: 1.45;
+}
+
+.test-recipients {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(245, 223, 156, 0.9);
+    background: rgba(245, 223, 156, 0.08);
+}
+
+.preview-frame {
+    width: 100%;
+    height: 560px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    background: #F5F5F7;
+}
+
+.outbox-item summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.outbox-body {
+    padding: 0 12px 12px;
+    display: grid;
+    gap: 8px;
+    justify-items: start;
+}
+
+.outbox-body iframe {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.outbox-error {
+    font-size: 0.8rem;
+    color: #991b1b;
+    background: #fef2f2;
+    border-radius: 8px;
+    padding: 6px 10px;
+    word-break: break-word;
+}
+
+.status-sent { background: rgba(179, 218, 182, 0.25); color: #166534; border: 1px solid rgba(179, 218, 182, 0.7); }
+.status-pending { background: rgba(245, 223, 156, 0.3); color: #713f12; border: 1px solid rgba(245, 223, 156, 0.9); }
+.status-failed { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.status-muted { background: rgba(107, 114, 128, 0.1); color: #374151; border: 1px solid rgba(107, 114, 128, 0.25); }
+
+@media screen and (max-width: 640px) {
+    .preview-frame { height: 480px; }
+    #email-test-form { flex-wrap: wrap; }
+}
+
+.check-row input {
+    flex-shrink: 0;
+    margin-top: 2px;
+}

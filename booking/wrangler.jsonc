@@ -32,16 +32,18 @@
     { "name": "LOGIN_LIMITER", "namespace_id": "4103", "simple": { "limit": 5, "period": 60 } }
   ],
 
-  // Daily cleanup (data retention) at 03:15 UTC.
-  "triggers": { "crons": ["15 3 * * *"] },
+  // "15 3 * * *": daily data-retention cleanup (03:15 UTC, see CLEANUP_CRON in src/index.ts).
+  // "*/10 * * * *": e-mail retries and appointment reminders.
+  "triggers": { "crons": ["15 3 * * *", "*/10 * * * *"] },
 
   "vars": {
     "ENVIRONMENT": "development",
-    // "log" stores e-mails in the database (visible in the admin outbox) instead of sending.
+    // "log" stores e-mails in the database (visible in the dashboard) instead of sending.
+    // "smtp" sends through the practice mailbox (MAIL_FROM, secrets SMTP_USER / SMTP_PASSWORD).
     "EMAIL_MODE": "log",
     "PUBLIC_BASE_URL": "http://localhost:8787",
     "PRACTICE_EMAIL": "info@psychotherapieberger.at",
-    "MAIL_FROM": "info@psychotherapieberger.at",
+    "MAIL_FROM": "termine@psychotherapieberger.at",
     "SMTP_HOST": "mx152d.netcup.net",
     "SMTP_PORT": "465",
     // Cloudflare's documented always-pass Turnstile test key.
@@ -67,13 +69,14 @@
         { "name": "READ_LIMITER", "namespace_id": "4202", "simple": { "limit": 120, "period": 60 } },
         { "name": "LOGIN_LIMITER", "namespace_id": "4203", "simple": { "limit": 5, "period": 60 } }
       ],
-      "triggers": { "crons": ["15 3 * * *"] },
+      "triggers": { "crons": ["15 3 * * *", "*/10 * * * *"] },
       "vars": {
         "ENVIRONMENT": "staging",
-        "EMAIL_MODE": "log",
+        // Real sending via netcup, but only to the test recipients set in the dashboard.
+        "EMAIL_MODE": "smtp",
         "PUBLIC_BASE_URL": "https://lisa-berger-booking-staging.blazgyoha.workers.dev",
         "PRACTICE_EMAIL": "info@psychotherapieberger.at",
-        "MAIL_FROM": "info@psychotherapieberger.at",
+        "MAIL_FROM": "termine@psychotherapieberger.at",
         "SMTP_HOST": "mx152d.netcup.net",
         "SMTP_PORT": "465",
         "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",

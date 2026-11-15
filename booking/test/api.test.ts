@@ -72,7 +72,7 @@ async function book(slotId: string, overrides: Record<string, unknown> = {}): Pr
 
 async function latestManageToken(): Promise<string> {
   const row = await env.DB.prepare(
-    "SELECT body_html FROM email_log WHERE subject LIKE 'Terminbestätigung%' ORDER BY created_at DESC LIMIT 1",
+    "SELECT body_html FROM email_log WHERE subject LIKE '%Terminbestätigung%' ORDER BY created_at DESC LIMIT 1",
   ).first<{ body_html: string }>();
   const match = row!.body_html.match(/termin\.html#t=([A-Za-z0-9_-]+)/);
   return match![1];
@@ -98,6 +98,7 @@ afterEach(async () => {
     env.DB.prepare("DELETE FROM email_log"),
     env.DB.prepare("DELETE FROM template_items"),
     env.DB.prepare("UPDATE settings SET value = '48' WHERE key = 'cancel_window_hours'"),
+    env.DB.prepare("DELETE FROM settings WHERE key LIKE 'email_%'"),
   ]);
 });
 
@@ -232,8 +233,8 @@ describe("client self-service cancellation", () => {
     expect((await call("/api/manage/cancel", { body: { token } })).status).toBe(409);
 
     const subjects = (await env.DB.prepare("SELECT subject FROM email_log").all<{ subject: string }>()).results.map((r) => r.subject);
-    expect(subjects.some((s) => s.startsWith("Terminabsage"))).toBe(true);
-    expect(subjects.some((s) => s.startsWith("Absage durch Klient:in"))).toBe(true);
+    expect(subjects.some((s) => s.includes("Terminabsage"))).toBe(true);
+    expect(subjects.some((s) => s.includes("Absage durch Klient:in"))).toBe(true);
   });
 
   it("refuses online cancellation after the configured window", async () => {

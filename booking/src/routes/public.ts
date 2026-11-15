@@ -6,6 +6,7 @@ import {
   practiceNewBookingEmail,
   sendEmail,
 } from "../email";
+import { getEmailSettings } from "../email-settings";
 import type { Booking, Env, Service } from "../env";
 import { cancelBooking, getBookingByTokenHash, getService, getSettings, listServices } from "../data";
 import { clientIp, enforceRateLimit, HttpError, json, newId, randomToken, readJson, sha256Hex } from "../http";
@@ -134,10 +135,13 @@ export async function createBooking(request: Request, env: Env, ctx: ExecutionCo
 
   const cancelDeadline = booking.start_at - settings.cancel_window_hours * HOUR;
   ctx.waitUntil(
-    Promise.all([
-      sendEmail(env, clientConfirmationEmail(env, booking, service, token, cancelDeadline)),
-      sendEmail(env, practiceNewBookingEmail(env, booking, service)),
-    ]),
+    (async () => {
+      const cfg = await getEmailSettings(env);
+      await Promise.all([
+        sendEmail(env, cfg, clientConfirmationEmail(env, cfg, booking, service, token, cancelDeadline)),
+        sendEmail(env, cfg, practiceNewBookingEmail(env, cfg, booking, service)),
+      ]);
+    })(),
   );
 
   return json(
@@ -207,10 +211,13 @@ export async function cancelManagedBooking(request: Request, env: Env, ctx: Exec
     throw new HttpError(409, "Dieser Termin wurde bereits abgesagt.", "already_cancelled");
   }
   ctx.waitUntil(
-    Promise.all([
-      sendEmail(env, clientCancellationEmail(env, booking, service, false)),
-      sendEmail(env, practiceCancellationEmail(env, booking, service)),
-    ]),
+    (async () => {
+      const cfg = await getEmailSettings(env);
+      await Promise.all([
+        sendEmail(env, cfg, clientCancellationEmail(cfg, booking, service, false)),
+        sendEmail(env, cfg, practiceCancellationEmail(cfg, booking, service)),
+      ]);
+    })(),
   );
   return json({ ...view, status: "cancelled", cancelledBy: "client", canCancel: false });
 }

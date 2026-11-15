@@ -11,12 +11,23 @@ import {
   setSetting,
   settingBounds,
 } from "../data";
-import { clientCancellationEmail, kindLabel, sendEmail } from "../email";
+import {
+  clientCancellationEmail,
+  kindLabel,
+  MAX_ATTEMPTS,
+  PREVIEW_TYPES,
+  type PreviewType,
+  previewEmail,
+  resendEmail,
+  sendEmail,
+  testEmail,
+} from "../email";
+import { getEmailSettings, mergeEmailSettings, saveEmailSettings } from "../email-settings";
 import type { Booking, Env, Service } from "../env";
 import { clientIp, enforceRateLimit, HttpError, json, newId, randomToken, readJson } from "../http";
 import { buildCalendar, PRACTICE_ADDRESS } from "../ics";
 import { addDays, DATE_RE, mondayOf, TIME_RE, viennaDate, viennaTime, viennaToUtc } from "../time";
-import { optionalString, requireString, validateId, validateInt } from "../validate";
+import { optionalString, requireString, validateEmail, validateId, validateInt } from "../validate";
 
 
 // ---------------------------------------------------------------------------
@@ -96,7 +107,7 @@ export async function adminCancelBooking(request: Request, env: Env, ctx: Execut
   }
   if (body.notify !== false) {
     const service = (await getService(env, booking.service_id)) as Service;
-    ctx.waitUntil(sendEmail(env, clientCancellationEmail(env, booking, service, true)));
+    ctx.waitUntil(getEmailSettings(env).then((cfg) => sendEmail(env, cfg, clientCancellationEmail(cfg, booking, service, true))));
   }
   return json({ ok: true });
 }
@@ -323,19 +334,99 @@ export async function regenerateFeed(env: Env): Promise<Response> {
   return json({ calendarFeedUrl: feedUrl(env, token) });
 }
 
+// ---------------------------------------------------------------------------
+// E-mail
+// ---------------------------------------------------------------------------
+
+function emailStatus(env: Env) {
+  return {
+    environment: env.ENVIRONMENT,
+    mode: env.EMAIL_MODE,
+    from: env.MAIL_FROM,
+    smtpHost: env.SMTP_HOST,
+    smtpConfigured: Boolean(env.SMTP_USER && env.SMTP_PASSWORD),
+  };
+}
+
+export async function getEmailConfig(env: Env): Promise<Response> {
+  const settings = await getEmailSettings(env);
+  const { testRecipients, ...rest } = settings;
+  return json({
+    status: emailStatus(env),
+    settings: env.ENVIRONMENT === "production" ? rest : settings,
+  });
+}
+
+export async function updateEmailConfig(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const merged = mergeEmailSettings(env, await getEmailSettings(env), body);
+  await saveEmailSettings(env, merged);
+  return getEmailConfig(env);
+}
+
+export async function sendTestEmail(request: Request, env: Env): Promise<Response> {
+  await enforceRateLimit(env.LOGIN_LIMITER, `test-email:${clientIp(request)}`);
+  const body = await readJson<{ to?: unknown }>(request);
+  const cfg = await getEmailSettings(env);
+  const to = body.to === undefined || body.to === "" ? cfg.notifyTo[0] : validateEmail(body.to);
+  const result = await sendEmail(env, cfg, testEmail(cfg, to));
+  return json({ to, ...result });
+}
+
+export async function getEmailPreview(request: Request, env: Env): Promise<Response> {
+  const body = await readJson<{ type?: unknown; settings?: unknown }>(request);
+  if (typeof body.type !== "string" || !(PREVIEW_TYPES as readonly string[]).includes(body.type)) {
+    throw new HttpError(400, "Unbekannte Vorschau.", "invalid_input");
+  }
+  const draft = body.settings && typeof body.settings === "object" ? (body.settings as Record<string, unknown>) : {};
+  const cfg = mergeEmailSettings(env, await getEmailSettings(env), draft);
+  const [service] = await listServices(env, false);
+  if (!service) throw new HttpError(404, "Keine Therapieform vorhanden.", "not_found");
+  const settings = await getSettings(env);
+  const mail = previewEmail(env, cfg, body.type as PreviewType, service, settings.cancel_window_hours);
+  return json({ subject: mail.subject, to: mail.to, html: mail.html, enabled: cfg.enabled[body.type as PreviewType] });
+}
+
 export async function getOutbox(env: Env): Promise<Response> {
   const { results } = await env.DB.prepare(
-    "SELECT id, created_at, to_addr, subject, body_html, status, error FROM email_log ORDER BY created_at DESC LIMIT 50",
-  ).all<{ id: string; created_at: number; to_addr: string; subject: string; body_html: string | null; status: string; error: string | null }>();
-  return json(
-    results.map((r) => ({
+    `SELECT id, created_at, kind, to_addr, subject, body_html, status, error, attempts, next_attempt_at, sent_at,
+            payload IS NOT NULL AS has_payload
+     FROM email_log ORDER BY created_at DESC LIMIT 100`,
+  ).all<{
+    id: string;
+    created_at: number;
+    kind: string | null;
+    to_addr: string;
+    subject: string;
+    body_html: string | null;
+    status: string;
+    error: string | null;
+    attempts: number;
+    next_attempt_at: number | null;
+    sent_at: number | null;
+    has_payload: number;
+  }>();
+  return json({
+    maxAttempts: MAX_ATTEMPTS,
+    items: results.map((r) => ({
       id: r.id,
       createdAt: new Date(r.created_at).toISOString(),
+      kind: r.kind,
       to: r.to_addr,
       subject: r.subject,
       html: r.body_html,
       status: r.status,
       error: r.error,
+      attempts: r.attempts,
+      nextAttemptAt: r.next_attempt_at && r.status !== "sent" ? new Date(r.next_attempt_at).toISOString() : null,
+      sentAt: r.sent_at ? new Date(r.sent_at).toISOString() : null,
+      canResend: r.status === "failed" && r.has_payload === 1,
     })),
-  );
+  });
+}
+
+export async function resendOutboxEmail(env: Env, id: string): Promise<Response> {
+  const result = await resendEmail(env, validateId(id));
+  if (!result) throw new HttpError(409, "Diese E-Mail kann nicht erneut gesendet werden.", "not_resendable");
+  return json(result);
 }
