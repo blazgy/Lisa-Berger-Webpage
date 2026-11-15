@@ -468,23 +468,108 @@
     refreshIcons();
   }
 
-  function fillEmailForm(cfg, isProduction) {
+  const emailState = { info: [], templates: {}, customized: new Set(), current: null, lastField: null };
+  const templateInfo = (id) => emailState.info.find((t) => t.id === id);
+  const sameTemplate = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  function fillEmailForm(data) {
+    const cfg = data.settings;
+    const isProduction = data.status.environment === "production";
     $("em-sender").value = cfg.senderName;
     $("em-reply").value = cfg.replyTo;
     $("em-notify").value = cfg.notifyTo.join(", ");
     $("em-reminder-hours").value = cfg.reminderHours;
-    $("em-signature").value = cfg.signature;
-    $("em-confirmation-note").value = cfg.confirmationNote;
-    $("em-reminder-note").value = cfg.reminderNote;
+    $("em-footer").value = cfg.footer;
     document.querySelectorAll("#email-form [data-kind]").forEach((cb) => { cb.checked = !!cfg.enabled[cb.dataset.kind]; });
     $("em-test-recipients-box").classList.toggle("hidden", isProduction);
     if (!isProduction) $("em-test-recipients").value = (cfg.testRecipients || []).join(", ");
+
+    emailState.info = data.templateInfo;
+    emailState.templates = JSON.parse(JSON.stringify(cfg.templates));
+    if (!emailState.current) emailState.current = data.templateInfo[0].id;
+    $("tpl-type").replaceChildren(...data.templateInfo.map((t) => h("option", { value: t.id }, t.label)));
+    $("tpl-type").value = emailState.current;
+    showTemplate();
   }
+
+  function showTemplate() {
+    const id = emailState.current;
+    const info = templateInfo(id);
+    const tpl = emailState.templates[id];
+    $("tpl-subject").value = tpl.subject;
+    $("tpl-heading").value = tpl.heading;
+    $("tpl-body").value = tpl.body;
+    $("tpl-hints").classList.toggle("hidden", !info.hasHints);
+    $("tpl-hint-open").value = tpl.hintOpen || "";
+    $("tpl-hint-closed").value = tpl.hintClosed || "";
+    $("tpl-chips").replaceChildren(
+      ...info.placeholders.map((p) =>
+        h("button", { type: "button", class: "tpl-chip", title: p.label, onclick: () => insertPlaceholder(p.key) },
+          `{{${p.key}}}`, h("span", null, p.label))),
+    );
+    emailState.lastField = $("tpl-body");
+    updateTemplateState();
+  }
+
+  function readTemplateFields() {
+    const id = emailState.current;
+    const tpl = { subject: $("tpl-subject").value, heading: $("tpl-heading").value, body: $("tpl-body").value };
+    if (templateInfo(id).hasHints) {
+      tpl.hintOpen = $("tpl-hint-open").value;
+      tpl.hintClosed = $("tpl-hint-closed").value;
+    }
+    emailState.templates[id] = tpl;
+    updateTemplateState();
+  }
+
+  function updateTemplateState() {
+    const id = emailState.current;
+    const isDefault = sameTemplate(emailState.templates[id], templateInfo(id).defaults);
+    $("tpl-state").textContent = isDefault ? "Standardtext" : "Angepasst";
+    $("tpl-state").className = `badge ${isDefault ? "status-muted" : "status-sent"}`;
+    $("tpl-reset").disabled = isDefault;
+  }
+
+  function insertPlaceholder(key) {
+    const field = emailState.lastField || $("tpl-body");
+    const token = `{{${key}}}`;
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? field.value.length;
+    field.value = field.value.slice(0, start) + token + field.value.slice(end);
+    field.focus();
+    field.setSelectionRange(start + token.length, start + token.length);
+    readTemplateFields();
+    schedulePreview();
+  }
+
+  document.querySelectorAll(".tpl-field").forEach((el) => {
+    el.addEventListener("focus", () => { emailState.lastField = el; });
+    el.addEventListener("input", readTemplateFields);
+  });
+  $("tpl-type").addEventListener("change", () => {
+    emailState.current = $("tpl-type").value;
+    showTemplate();
+    renderPreview();
+  });
+  $("tpl-reset").addEventListener("click", () => {
+    const id = emailState.current;
+    emailState.templates[id] = JSON.parse(JSON.stringify(templateInfo(id).defaults));
+    showTemplate();
+    renderPreview();
+    toast("Standardtext wiederhergestellt – zum Übernehmen bitte speichern.");
+  });
 
   function emailEnabledDraft() {
     const enabled = {};
     document.querySelectorAll("#email-form [data-kind]").forEach((cb) => { enabled[cb.dataset.kind] = cb.checked; });
     return enabled;
+  }
+
+  /** Templates for saving: unchanged defaults are sent as null (= use the built-in text). */
+  function templatesDraft() {
+    const out = {};
+    for (const t of emailState.info) out[t.id] = sameTemplate(emailState.templates[t.id], t.defaults) ? null : emailState.templates[t.id];
+    return out;
   }
 
   function emailDraft() {
@@ -493,10 +578,9 @@
       replyTo: $("em-reply").value,
       notifyTo: $("em-notify").value,
       reminderHours: Number($("em-reminder-hours").value),
-      signature: $("em-signature").value,
-      confirmationNote: $("em-confirmation-note").value,
-      reminderNote: $("em-reminder-note").value,
+      footer: $("em-footer").value,
       enabled: emailEnabledDraft(),
+      templates: templatesDraft(),
     };
     if (!$("em-test-recipients-box").classList.contains("hidden")) draft.testRecipients = $("em-test-recipients").value;
     return draft;
@@ -505,7 +589,7 @@
   async function loadEmail() {
     const data = await api("/api/admin/email");
     renderEmailStatus(data.status);
-    fillEmailForm(data.settings, data.status.environment === "production");
+    fillEmailForm(data);
     await renderPreview();
   }
 
@@ -514,8 +598,7 @@
     const err = $("email-form-error");
     err.classList.add("hidden");
     try {
-      const data = await api("/api/admin/email", "PUT", emailDraft());
-      fillEmailForm(data.settings, data.status.environment === "production");
+      fillEmailForm(await api("/api/admin/email", "PUT", emailDraft()));
       toast("E-Mail-Einstellungen gespeichert");
     } catch (ex) {
       err.textContent = ex.message;
@@ -527,29 +610,31 @@
   let previewSeq = 0;
   async function renderPreview() {
     const seq = ++previewSeq;
-    const type = $("em-preview-type").value;
-    // Only the fields that change the content; incomplete addresses while typing must not block it.
+    const id = emailState.current;
+    if (!id) return;
+    // Only what changes the content; incomplete addresses while typing must not block it.
     const settings = {
-      signature: $("em-signature").value,
-      confirmationNote: $("em-confirmation-note").value,
-      reminderNote: $("em-reminder-note").value,
+      footer: $("em-footer").value,
       enabled: emailEnabledDraft(),
+      templates: { [id]: emailState.templates[id] },
     };
     const hours = Number($("em-reminder-hours").value);
     if (Number.isInteger(hours) && hours >= 2 && hours <= 72) settings.reminderHours = hours;
     try {
-      const p = await api("/api/admin/email/preview", "POST", { type, settings });
+      const p = await api("/api/admin/email/preview", "POST", { type: id, settings });
       if (seq !== previewSeq) return;
+      $("em-preview-subject").classList.remove("text-red-500");
       $("em-preview-subject").textContent = `Betreff: ${p.subject}${p.enabled ? "" : " – diese E-Mail ist derzeit ausgeschaltet"}`;
       $("em-preview-frame").srcdoc = p.html;
     } catch (ex) {
-      if (seq === previewSeq) $("em-preview-subject").textContent = ex.message;
+      if (seq !== previewSeq) return;
+      $("em-preview-subject").classList.add("text-red-500");
+      $("em-preview-subject").textContent = ex.message;
     }
   }
   const schedulePreview = () => { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 400); };
   $("email-form").addEventListener("input", schedulePreview);
-  $("email-form").addEventListener("change", schedulePreview);
-  $("em-preview-type").addEventListener("change", renderPreview);
+  $("email-form").addEventListener("change", (e) => { if (e.target.id !== "tpl-type") schedulePreview(); });
 
   $("email-test-form").addEventListener("submit", async (e) => {
     e.preventDefault();

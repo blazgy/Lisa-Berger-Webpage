@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="stylesheet" href="styles.css?v=1.4">
     <link rel="stylesheet" href="booking.css?v=1">
-    <link rel="stylesheet" href="admin.css?v=2">
+    <link rel="stylesheet" href="admin.css?v=3">
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 
@@ -263,21 +263,55 @@
                                 <label class="check-row"><input type="checkbox" class="form-checkbox" data-kind="practice_cancellation"> <span><strong>Online-Absage</strong> an die Praxis</span></label>
                             </div>
 
-                            <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Texte</h3>
-                            <div class="email-texts mb-4">
-                                <div>
-                                    <label for="em-signature" class="input-label">Grußformel</label>
-                                    <textarea id="em-signature" rows="3" maxlength="300" class="form-input-date"></textarea>
+                            <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">E-Mail-Texte</h3>
+                            <p class="form-hint-admin mb-2">Wählen Sie eine E-Mail und bearbeiten Sie Betreff und Text. Platzhalter wie <code>{{name}}</code> werden beim Versand automatisch ersetzt. Eine Leerzeile beginnt einen neuen Absatz, <code>**Text**</code> wird fett. Buttons und ihre Links sind fest vorgegeben – <code>{{button}}</code> bestimmt nur, wo der Button steht. Bitte keine Gesundheitsdaten in die Texte schreiben.</p>
+                            <div class="tpl-editor mb-4">
+                                <div class="tpl-head">
+                                    <select id="tpl-type" class="form-select" aria-label="Welche E-Mail bearbeiten"></select>
+                                    <span id="tpl-state" class="badge status-muted"></span>
                                 </div>
                                 <div>
-                                    <label for="em-confirmation-note" class="input-label">Zusatztext in der Terminbestätigung (optional)</label>
-                                    <textarea id="em-confirmation-note" rows="3" maxlength="1000" class="form-input-date" placeholder="z. B. Anfahrt, Klingel, was zum ersten Termin mitzubringen ist"></textarea>
+                                    <label for="tpl-subject" class="input-label">Betreff</label>
+                                    <input type="text" id="tpl-subject" maxlength="150" class="form-input-date tpl-field">
                                 </div>
                                 <div>
-                                    <label for="em-reminder-note" class="input-label">Zusatztext in der Erinnerung (optional)</label>
-                                    <textarea id="em-reminder-note" rows="3" maxlength="1000" class="form-input-date"></textarea>
+                                    <label for="tpl-heading" class="input-label">Überschrift</label>
+                                    <input type="text" id="tpl-heading" maxlength="100" class="form-input-date tpl-field">
                                 </div>
-                                <p class="form-hint-admin">Bitte keine Gesundheitsdaten in die Texte schreiben – sie gehen an alle Klient:innen.</p>
+                                <div>
+                                    <label for="tpl-body" class="input-label">Text</label>
+                                    <textarea id="tpl-body" rows="14" maxlength="5000" class="form-input-date tpl-field"></textarea>
+                                </div>
+                                <div id="tpl-hints" class="tpl-hints hidden">
+                                    <p class="form-hint-admin m-0">Diese Sätze werden an der Stelle von <code>{{absagehinweis}}</code> eingesetzt – je nachdem, ob die kostenfreie Online-Absage noch möglich ist.</p>
+                                    <div>
+                                        <label for="tpl-hint-open" class="input-label">Absage-Hinweis, solange die Online-Absage möglich ist</label>
+                                        <textarea id="tpl-hint-open" rows="3" maxlength="1000" class="form-input-date tpl-field"></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="tpl-hint-closed" class="input-label">Absage-Hinweis, wenn die Online-Absage nicht mehr möglich ist</label>
+                                        <textarea id="tpl-hint-closed" rows="3" maxlength="1000" class="form-input-date tpl-field"></textarea>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="input-label">Platzhalter einfügen</span>
+                                    <div id="tpl-chips" class="tpl-chips"></div>
+                                </div>
+                                <div>
+                                    <button type="button" id="tpl-reset" class="btn-secondary">Diese E-Mail auf den Standardtext zurücksetzen</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="em-footer" class="input-label">Fußzeile (in allen E-Mails)</label>
+                                <textarea id="em-footer" rows="2" maxlength="500" class="form-input-date"></textarea>
+                            </div>
+
+                            <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Vorschau</h3>
+                            <div class="email-preview mb-4">
+                                <p id="em-preview-subject" class="form-hint-admin mb-2"></p>
+                                <iframe id="em-preview-frame" class="preview-frame" sandbox="" title="Vorschau der E-Mail"></iframe>
+                                <p class="form-hint-admin">Mit Beispieldaten. Zeigt Ihre Änderungen schon vor dem Speichern.</p>
                             </div>
 
                             <div id="em-test-recipients-box" class="test-recipients mb-4 hidden">
@@ -287,24 +321,8 @@
                             </div>
 
                             <div id="email-form-error" class="booking-error hidden mb-4" role="alert"></div>
-                            <button type="submit" class="btn-secondary">E-Mail-Einstellungen speichern</button>
+                            <button type="submit" class="btn-secondary">E-Mail-Einstellungen und Texte speichern</button>
                         </form>
-
-                        <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Vorschau</h3>
-                        <div class="email-preview mb-6">
-                            <div class="feed-box mb-2">
-                                <select id="em-preview-type" class="form-select" aria-label="Welche E-Mail anzeigen">
-                                    <option value="client_confirmation">Terminbestätigung</option>
-                                    <option value="client_reminder">Terminerinnerung</option>
-                                    <option value="client_cancellation">Absagebestätigung</option>
-                                    <option value="practice_new">Neue Buchung (Praxis)</option>
-                                    <option value="practice_cancellation">Online-Absage (Praxis)</option>
-                                </select>
-                            </div>
-                            <p id="em-preview-subject" class="form-hint-admin mb-2"></p>
-                            <iframe id="em-preview-frame" class="preview-frame" sandbox="" title="Vorschau der E-Mail"></iframe>
-                            <p class="form-hint-admin">Mit Beispieldaten. Zeigt Ihre Änderungen schon vor dem Speichern.</p>
-                        </div>
 
                         <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Test-E-Mail</h3>
                         <form id="email-test-form" class="feed-box mb-2">
@@ -342,7 +360,7 @@
         <span id="toast-message"></span>
     </div>
 
-    <script src="admin.js?v=2" defer></script>
+    <script src="admin.js?v=3" defer></script>
 </body>
 
 </html>

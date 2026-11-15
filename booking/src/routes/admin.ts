@@ -15,14 +15,22 @@ import {
   clientCancellationEmail,
   kindLabel,
   MAX_ATTEMPTS,
-  PREVIEW_TYPES,
-  type PreviewType,
   previewEmail,
   resendEmail,
   sendEmail,
   testEmail,
 } from "../email";
 import { getEmailSettings, mergeEmailSettings, saveEmailSettings } from "../email-settings";
+import {
+  DEFAULT_TEMPLATES,
+  HAS_HINTS,
+  HINT_PLACEHOLDERS,
+  PLACEHOLDER_LABELS,
+  TEMPLATE_IDS,
+  TEMPLATE_LABELS,
+  TEMPLATE_PLACEHOLDERS,
+  type TemplateId,
+} from "../email-templates";
 import type { Booking, Env, Service } from "../env";
 import { clientIp, enforceRateLimit, HttpError, json, newId, randomToken, readJson } from "../http";
 import { buildCalendar, PRACTICE_ADDRESS } from "../ics";
@@ -354,6 +362,15 @@ export async function getEmailConfig(env: Env): Promise<Response> {
   return json({
     status: emailStatus(env),
     settings: env.ENVIRONMENT === "production" ? rest : settings,
+    templateInfo: TEMPLATE_IDS.map((id) => ({
+      id,
+      label: TEMPLATE_LABELS[id],
+      kind: id === "client_cancellation_by_practice" ? "client_cancellation" : id,
+      hasHints: HAS_HINTS.includes(id),
+      placeholders: TEMPLATE_PLACEHOLDERS[id].map((key) => ({ key, label: PLACEHOLDER_LABELS[key] })),
+      hintPlaceholders: HAS_HINTS.includes(id) ? HINT_PLACEHOLDERS : [],
+      defaults: DEFAULT_TEMPLATES[id],
+    })),
   });
 }
 
@@ -375,16 +392,18 @@ export async function sendTestEmail(request: Request, env: Env): Promise<Respons
 
 export async function getEmailPreview(request: Request, env: Env): Promise<Response> {
   const body = await readJson<{ type?: unknown; settings?: unknown }>(request);
-  if (typeof body.type !== "string" || !(PREVIEW_TYPES as readonly string[]).includes(body.type)) {
+  if (typeof body.type !== "string" || !(TEMPLATE_IDS as readonly string[]).includes(body.type)) {
     throw new HttpError(400, "Unbekannte Vorschau.", "invalid_input");
   }
+  const id = body.type as TemplateId;
   const draft = body.settings && typeof body.settings === "object" ? (body.settings as Record<string, unknown>) : {};
   const cfg = mergeEmailSettings(env, await getEmailSettings(env), draft);
   const [service] = await listServices(env, false);
   if (!service) throw new HttpError(404, "Keine Therapieform vorhanden.", "not_found");
   const settings = await getSettings(env);
-  const mail = previewEmail(env, cfg, body.type as PreviewType, service, settings.cancel_window_hours);
-  return json({ subject: mail.subject, to: mail.to, html: mail.html, enabled: cfg.enabled[body.type as PreviewType] });
+  const mail = previewEmail(env, cfg, id, service, settings.cancel_window_hours);
+  const kind = id === "client_cancellation_by_practice" ? "client_cancellation" : id;
+  return json({ subject: mail.subject, to: mail.to, html: mail.html, enabled: cfg.enabled[kind] });
 }
 
 export async function getOutbox(env: Env): Promise<Response> {

@@ -2,6 +2,14 @@ import { WorkerMailer } from "worker-mailer";
 import { type EmailKind, type EmailSettings, isAllowedTestRecipient } from "./email-settings";
 import type { Booking, Env, Service } from "./env";
 import { escapeHtml, newId } from "./http";
+import {
+  renderBodyHtml,
+  renderBodyText,
+  renderInline,
+  renderText,
+  type TemplateId,
+  type Values,
+} from "./email-templates";
 import { buildCalendar, PRACTICE_ADDRESS } from "./ics";
 import { addDays, formatViennaLong, viennaDate, viennaToUtc } from "./time";
 
@@ -204,7 +212,7 @@ export async function resendEmail(env: Env, id: string, transport: Transport = s
 }
 
 // ---------------------------------------------------------------------------
-// Templates
+// E-mails built from the editable templates
 // ---------------------------------------------------------------------------
 
 const KIND_LABEL: Record<Booking["session_kind"], string> = {
@@ -218,63 +226,97 @@ export function kindLabel(kind: Booking["session_kind"]): string {
 
 /** Strip characters that must never appear in a header line (subject). */
 function headerSafe(value: string): string {
-  return value.replace(/[\r\n\t]+/g, " ").slice(0, 120);
+  return value.replace(/[\r\n\t]+/g, " ").slice(0, 150);
 }
 
-/** Escaped multi-line text (from the dashboard) as HTML. */
-function multiline(value: string): string {
-  return escapeHtml(value).replace(/\n/g, "<br>");
-}
-
-function layout(title: string, bodyHtml: string, signature: string | null): string {
+function layout(heading: string, bodyHtml: string, footer: string): string {
   return `<!doctype html><html lang="de"><body style="margin:0;padding:24px;background:#F5F5F7;font-family:Georgia,serif;color:#2B2B2B;">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;border-top:4px solid #B3DAB6;">
-<h2 style="font-family:Arial,sans-serif;font-weight:600;margin:0 0 16px;">${escapeHtml(title)}</h2>
+${heading ? `<h2 style="font-family:Arial,sans-serif;font-weight:600;margin:0 0 16px;">${heading}</h2>` : ""}
 ${bodyHtml}
-${signature ? `<p style="margin-top:32px;">${multiline(signature)}</p>` : ""}
-<p style="font-size:12px;color:#6b7280;margin-top:24px;">Praxis für Psychotherapie · ${escapeHtml(PRACTICE_ADDRESS)}<br>
-Tel. +43 677 631 426 87 · info@psychotherapieberger.at</p>
+${footer ? `<p style="font-size:12px;color:#6b7280;margin-top:24px;">${escapeHtml(footer).replace(/\n/g, "<br>")}</p>` : ""}
 </div></body></html>`;
 }
 
-function note(value: string): string {
-  return value ? `<p style="background:#F5F5F7;border-radius:12px;padding:12px 16px;">${multiline(value)}</p>` : "";
+function table(rows: [string, string][]): Value {
+  return {
+    block: true,
+    text: rows.map(([k, v]) => `${k}: ${v}`).join("\n"),
+    html: `<table style="border-collapse:collapse;margin:0 0 16px;width:100%;font-size:15px;">${rows
+      .map(
+        ([k, v]) =>
+          `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;vertical-align:top;white-space:nowrap;">${escapeHtml(k)}</td><td style="padding:6px 0;">${escapeHtml(v).replace(/\n/g, "<br>")}</td></tr>`,
+      )
+      .join("")}</table>`,
+  };
 }
 
-function detailsTable(rows: [string, string][]): string {
-  return `<table style="border-collapse:collapse;margin:16px 0;width:100%;font-size:15px;">${rows
-    .map(
-      ([k, v]) =>
-        `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;vertical-align:top;white-space:nowrap;">${escapeHtml(k)}</td><td style="padding:6px 0;">${escapeHtml(v)}</td></tr>`,
-    )
-    .join("")}</table>`;
+function button(href: string, label: string): Value {
+  return {
+    block: true,
+    text: `${label}: ${href}`,
+    html: `<p style="margin:8px 0 24px;"><a href="${escapeHtml(href)}" style="display:inline-block;background:#B3DAB6;color:#2B2B2B;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-weight:600;">${escapeHtml(label)}</a></p>`,
+  };
 }
 
-function detailsText(rows: [string, string][]): string {
-  return rows.map(([k, v]) => `${k}: ${v}`).join("\n");
-}
-
-function button(href: string, label: string): string {
-  return `<p style="margin:24px 0;"><a href="${escapeHtml(href)}" style="display:inline-block;background:#B3DAB6;color:#2B2B2B;text-decoration:none;padding:12px 24px;border-radius:999px;font-family:Arial,sans-serif;font-weight:600;">${escapeHtml(label)}</a></p>`;
-}
-
-const textBlock = (value: string) => (value ? `\n\n${value}` : "");
+type Value = Values[string];
+const plain = (text: string): Value => ({ text });
 
 export function manageUrl(env: Env, token: string): string {
   return `${env.PUBLIC_BASE_URL.replace(/\/$/, "")}/termin.html#t=${token}`;
 }
 
-function bookingRows(b: Booking, service: Service): [string, string][] {
-  return [
-    ["Termin", formatViennaLong(b.start_at)],
+function bookingValues(b: Booking, service: Service): Values {
+  const values: Values = {
+    name: plain(b.name),
+    termin: plain(formatViennaLong(b.start_at)),
+    therapieform: plain(service.name),
+    dauer: plain(`${service.duration_min} Minuten`),
+    preis: plain(`${service.price_eur} €`),
+    art: plain(kindLabel(b.session_kind)),
+    ort: plain(PRACTICE_ADDRESS),
+    email: plain(b.email),
+    telefon: plain(b.phone || "–"),
+    anmerkungen: plain(b.notes || "–"),
+  };
+  values.termindetails = table([
+    ["Termin", values.termin.text],
     ["Therapieform", `${service.name} (${service.duration_min} Minuten, ${service.price_eur} €)`],
-    ["Art", kindLabel(b.session_kind)],
+    ["Art", values.art.text],
     ["Ort", PRACTICE_ADDRESS],
-  ];
+  ]);
+  values.kontaktdaten = table([
+    ["Name", b.name],
+    ["E-Mail", b.email],
+    ["Telefon", b.phone || "–"],
+    ["Anmerkungen", b.notes || "–"],
+  ]);
+  return values;
 }
 
-const LATE_POLICY =
-  "Falls Sie verhindert sind, kontaktieren Sie mich bitte telefonisch oder per E-Mail; kurzfristige Absagen und versäumte Stunden werden in Rechnung gestellt.";
+/** Adds {{absagefrist}} and {{absagehinweis}} (the hint text depends on whether online cancellation is still possible). */
+function withCancelHint(cfg: EmailSettings, id: TemplateId, values: Values, cancelDeadline: number, now: number): Values {
+  const tpl = cfg.templates[id];
+  const out: Values = { ...values, absagefrist: plain(formatViennaLong(cancelDeadline)) };
+  const hint = (cancelDeadline > now ? tpl.hintOpen : tpl.hintClosed) ?? "";
+  out.absagehinweis = { text: renderText(hint, out), html: renderInline(hint, out) };
+  return out;
+}
+
+function build(
+  cfg: EmailSettings,
+  id: TemplateId,
+  values: Values,
+  base: Omit<OutgoingEmail, "subject" | "html" | "text">,
+): OutgoingEmail {
+  const tpl = cfg.templates[id];
+  return {
+    ...base,
+    subject: headerSafe(renderText(tpl.subject, values)),
+    html: layout(renderInline(tpl.heading, values), renderBodyHtml(tpl.body, values), cfg.footer),
+    text: `${renderBodyText(tpl.body, values)}${cfg.footer ? `\n\n--\n${cfg.footer}` : ""}`,
+  };
+}
 
 export function clientConfirmationEmail(
   env: Env,
@@ -284,54 +326,27 @@ export function clientConfirmationEmail(
   token: string,
   cancelDeadline: number,
 ): OutgoingEmail {
-  const rows = bookingRows(b, service);
+  const now = Date.now();
   const link = manageUrl(env, token);
-  const deadline = formatViennaLong(cancelDeadline);
-  const canStillCancel = cancelDeadline > Date.now();
-  const policy = canStillCancel
-    ? `Sie können den Termin bis <strong>${escapeHtml(deadline)}</strong> kostenfrei online absagen. Danach bitte ich Sie, mich telefonisch oder per E-Mail zu kontaktieren; kurzfristige Absagen und versäumte Stunden werden in Rechnung gestellt.`
-    : `Da der Termin sehr kurzfristig gebucht wurde, ist eine kostenfreie Online-Absage nicht mehr möglich. ${LATE_POLICY}`;
-  const policyText = canStillCancel
-    ? `Kostenfreie Online-Absage bis ${deadline}:`
-    : "Eine kostenfreie Online-Absage ist für diesen Termin nicht mehr möglich. Ihr Termin:";
-  const html = layout(
-    "Ihre Terminbestätigung",
-    `<p>Guten Tag ${escapeHtml(b.name)},</p>
-<p>vielen Dank für Ihre Buchung. Ihr Termin ist hiermit bestätigt:</p>
-${detailsTable(rows)}
-${note(cfg.confirmationNote)}
-<p>${policy}</p>
-${button(link, canStillCancel ? "Termin ansehen oder absagen" : "Termin ansehen")}
-<p style="font-size:13px;color:#6b7280;">Den Termin für Ihren Kalender finden Sie im Anhang (termin.ics). Bitte geben Sie den Link oben nicht weiter – er ermöglicht die Absage Ihres Termins.</p>`,
-    cfg.signature,
-  );
-  const text = `Guten Tag ${b.name},
-
-vielen Dank für Ihre Buchung. Ihr Termin ist bestätigt:
-
-${detailsText(rows)}${textBlock(cfg.confirmationNote)}
-
-${policyText}
-${link}${textBlock(cfg.signature)}`;
+  const canStillCancel = cancelDeadline > now;
+  const values = withCancelHint(cfg, "client_confirmation", bookingValues(b, service), cancelDeadline, now);
+  values.button = button(link, canStillCancel ? "Termin ansehen oder absagen" : "Termin ansehen");
   const ics = buildCalendar([
     {
       uid: `${b.id}@psychotherapieberger.at`,
       start: b.start_at,
       end: b.end_at,
       summary: `${service.name} – Lisa Berger`,
-      description: canStillCancel ? `Online absagen bis ${deadline}: ${link}` : `Termin ansehen: ${link}`,
+      description: canStillCancel ? `Online absagen bis ${formatViennaLong(cancelDeadline)}: ${link}` : `Termin ansehen: ${link}`,
       location: PRACTICE_ADDRESS,
     },
   ]);
-  return {
+  return build(cfg, "client_confirmation", values, {
     kind: "client_confirmation",
     to: [b.email],
     replyTo: cfg.replyTo,
-    subject: `Terminbestätigung: ${formatViennaLong(b.start_at)}`,
-    html,
-    text,
     attachments: [{ filename: "termin.ics", content: btoa(unescape(encodeURIComponent(ics))), mimeType: "text/calendar" }],
-  };
+  });
 }
 
 export function clientReminderEmail(
@@ -341,82 +356,30 @@ export function clientReminderEmail(
   cancelDeadline: number,
   now = Date.now(),
 ): OutgoingEmail {
-  const rows = bookingRows(b, service);
-  const canStillCancel = cancelDeadline > now;
-  const policy = canStillCancel
-    ? `Falls Sie verhindert sind, können Sie den Termin noch bis ${formatViennaLong(cancelDeadline)} über den Link in Ihrer Terminbestätigung kostenfrei absagen.`
-    : LATE_POLICY;
-  return {
-    kind: "client_reminder",
-    to: [b.email],
-    replyTo: cfg.replyTo,
-    subject: `Erinnerung: Ihr Termin am ${formatViennaLong(b.start_at)}`,
-    html: layout(
-      "Erinnerung an Ihren Termin",
-      `<p>Guten Tag ${escapeHtml(b.name)},</p>
-<p>ich möchte Sie an Ihren bevorstehenden Termin erinnern:</p>
-${detailsTable(rows)}
-${note(cfg.reminderNote)}
-<p>${escapeHtml(policy)}</p>
-<p>Ich freue mich auf Sie.</p>`,
-      cfg.signature,
-    ),
-    text: `Guten Tag ${b.name},
-
-ich möchte Sie an Ihren bevorstehenden Termin erinnern:
-
-${detailsText(rows)}${textBlock(cfg.reminderNote)}
-
-${policy}
-
-Ich freue mich auf Sie.${textBlock(cfg.signature)}`,
-  };
+  const values = withCancelHint(cfg, "client_reminder", bookingValues(b, service), cancelDeadline, now);
+  return build(cfg, "client_reminder", values, { kind: "client_reminder", to: [b.email], replyTo: cfg.replyTo });
 }
 
 export function practiceNewBookingEmail(env: Env, cfg: EmailSettings, b: Booking, service: Service): OutgoingEmail {
-  const rows: [string, string][] = [
-    ...bookingRows(b, service).slice(0, 3),
-    ["Name", b.name],
-    ["E-Mail", b.email],
-    ["Telefon", b.phone || "–"],
-    ["Anmerkungen", b.notes || "–"],
-  ];
-  const adminLink = `${env.PUBLIC_BASE_URL.replace(/\/$/, "")}/admin.html`;
-  return {
-    kind: "practice_new",
-    to: cfg.notifyTo,
-    replyTo: b.email,
-    subject: headerSafe(`Neue Buchung: ${service.name}, ${formatViennaLong(b.start_at)}`),
-    html: layout("Neue Online-Buchung", `${detailsTable(rows)}${button(adminLink, "Zum Praxis-Dashboard")}`, null),
-    text: `Neue Online-Buchung\n\n${detailsText(rows)}\n\n${adminLink}`,
-  };
+  const values = bookingValues(b, service);
+  values.button = button(`${env.PUBLIC_BASE_URL.replace(/\/$/, "")}/admin.html`, "Zum Praxis-Dashboard");
+  return build(cfg, "practice_new", values, { kind: "practice_new", to: cfg.notifyTo, replyTo: b.email });
 }
 
 export function clientCancellationEmail(cfg: EmailSettings, b: Booking, service: Service, byPractice: boolean): OutgoingEmail {
-  const rows = bookingRows(b, service).slice(0, 2);
-  const intro = byPractice
-    ? "leider muss ich den folgenden Termin absagen. Ich bitte um Ihr Verständnis und melde mich gerne wegen eines Ersatztermins – Sie können auch jederzeit einen neuen Termin online buchen."
-    : "hiermit bestätige ich die Absage Ihres Termins:";
-  return {
+  return build(cfg, byPractice ? "client_cancellation_by_practice" : "client_cancellation", bookingValues(b, service), {
     kind: "client_cancellation",
     to: [b.email],
     replyTo: cfg.replyTo,
-    subject: `Terminabsage: ${formatViennaLong(b.start_at)}`,
-    html: layout("Terminabsage", `<p>Guten Tag ${escapeHtml(b.name)},</p><p>${escapeHtml(intro)}</p>${detailsTable(rows)}`, cfg.signature),
-    text: `Guten Tag ${b.name},\n\n${intro}\n\n${detailsText(rows)}${textBlock(cfg.signature)}`,
-  };
+  });
 }
 
 export function practiceCancellationEmail(cfg: EmailSettings, b: Booking, service: Service): OutgoingEmail {
-  const rows: [string, string][] = [...bookingRows(b, service).slice(0, 3), ["Name", b.name], ["E-Mail", b.email]];
-  return {
+  return build(cfg, "practice_cancellation", bookingValues(b, service), {
     kind: "practice_cancellation",
     to: cfg.notifyTo,
     replyTo: b.email,
-    subject: headerSafe(`Absage durch Klient:in: ${formatViennaLong(b.start_at)}`),
-    html: layout("Termin wurde online abgesagt", `${detailsTable(rows)}<p>Der Termin ist wieder buchbar.</p>`, null),
-    text: `Termin wurde online abgesagt\n\n${detailsText(rows)}`,
-  };
+  });
 }
 
 export function testEmail(cfg: EmailSettings, to: string): OutgoingEmail {
@@ -427,8 +390,8 @@ export function testEmail(cfg: EmailSettings, to: string): OutgoingEmail {
     to: [to],
     replyTo: cfg.replyTo,
     subject: "Test-E-Mail der Online-Terminbuchung",
-    html: layout("Test-E-Mail", `<p>${escapeHtml(body)}</p>`, cfg.signature),
-    text: `${body}${textBlock(cfg.signature)}`,
+    html: layout("Test-E-Mail", `<p>${escapeHtml(body)}</p>`, cfg.footer),
+    text: body,
   };
 }
 
@@ -436,10 +399,7 @@ export function testEmail(cfg: EmailSettings, to: string): OutgoingEmail {
 // Dashboard preview with sample data
 // ---------------------------------------------------------------------------
 
-export const PREVIEW_TYPES = ["client_confirmation", "client_reminder", "client_cancellation", "practice_new", "practice_cancellation"] as const;
-export type PreviewType = (typeof PREVIEW_TYPES)[number];
-
-export function previewEmail(env: Env, cfg: EmailSettings, type: PreviewType, service: Service, cancelWindowHours: number): OutgoingEmail {
+export function previewEmail(env: Env, cfg: EmailSettings, id: TemplateId, service: Service, cancelWindowHours: number): OutgoingEmail {
   // Next week, 10:00 Vienna time.
   const start = viennaToUtc(addDays(viennaDate(Date.now()), 7), "10:00");
   const sample: Booking = {
@@ -461,7 +421,7 @@ export function previewEmail(env: Env, cfg: EmailSettings, type: PreviewType, se
     created_at: Date.now(),
   };
   const deadline = start - cancelWindowHours * HOUR;
-  switch (type) {
+  switch (id) {
     case "client_confirmation":
       return clientConfirmationEmail(env, cfg, sample, service, "BEISPIEL-LINK", deadline);
     case "client_reminder":
@@ -469,6 +429,8 @@ export function previewEmail(env: Env, cfg: EmailSettings, type: PreviewType, se
       return clientReminderEmail(cfg, sample, service, deadline, start - cfg.reminderHours * HOUR);
     case "client_cancellation":
       return clientCancellationEmail(cfg, sample, service, false);
+    case "client_cancellation_by_practice":
+      return clientCancellationEmail(cfg, sample, service, true);
     case "practice_new":
       return practiceNewBookingEmail(env, cfg, sample, service);
     case "practice_cancellation":

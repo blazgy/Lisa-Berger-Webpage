@@ -184,19 +184,54 @@ describe("dashboard e-mail API", () => {
   it("saves settings, previews with escaping and logs a test e-mail", async () => {
     const cookie = await login();
     const put = await call(cookie, "/api/admin/email", "PUT", {
-      signature: "Herzliche Grüße\n<script>Lisa</script>",
       notifyTo: ["praxis@example.at"],
       enabled: { client_reminder: false },
+      templates: {
+        client_confirmation: {
+          subject: "Ihr Termin am {{termin}}",
+          heading: "Hallo {{name}}",
+          body: "Liebe:r {{name}},\n\n**Danke** für Ihre Buchung.\n\n{{termindetails}}\n\n{{absagehinweis}}\n\nHerzliche Grüße\n<script>Lisa</script>",
+          hintOpen: "Absage bis {{absagefrist}} möglich.",
+          hintClosed: "Absage nicht mehr möglich.",
+        },
+      },
     });
     expect(put.status, await put.clone().text()).toBe(200);
-    const data = (await put.json()) as { settings: { notifyTo: string[]; enabled: Record<string, boolean> }; status: { mode: string } };
+    const data = (await put.json()) as {
+      settings: { notifyTo: string[]; enabled: Record<string, boolean>; customized: string[] };
+      status: { mode: string };
+      templateInfo: { id: string }[];
+    };
     expect(data.settings.notifyTo).toEqual(["praxis@example.at"]);
     expect(data.settings.enabled.client_reminder).toBe(false);
+    expect(data.settings.customized).toEqual(["client_confirmation"]);
+    expect(data.templateInfo).toHaveLength(6);
     expect(data.status.mode).toBe("log");
 
-    const preview = (await (await call(cookie, "/api/admin/email/preview", "POST", { type: "client_confirmation" })).json()) as { html: string };
+    const preview = (await (await call(cookie, "/api/admin/email/preview", "POST", { type: "client_confirmation" })).json()) as {
+      html: string;
+      subject: string;
+    };
+    expect(preview.subject).toMatch(/^Ihr Termin am /);
+    expect(preview.html).toContain("Hallo Maria Muster");
+    expect(preview.html).toContain("<strong>Danke</strong>");
     expect(preview.html).toContain("Herzliche Grüße<br>&lt;script&gt;Lisa&lt;/script&gt;");
-    expect(preview.html).toContain("Maria Muster");
+    expect(preview.html).not.toContain("<script>");
+    expect(preview.html).toContain("Absage bis ");
+    // {{button}} was removed from the text, but the fixed button still appears.
+    expect(preview.html).toContain("termin.html#t=BEISPIEL-LINK");
+
+    const unknown = await call(cookie, "/api/admin/email", "PUT", {
+      templates: { practice_new: { subject: "Neu: {{vorname}}", heading: "", body: "{{termindetails}}" } },
+    });
+    expect(unknown.status).toBe(400);
+    expect(((await unknown.json()) as { error: string }).error).toContain("{{vorname}}");
+
+    // null resets a text to the default.
+    const reset = (await (await call(cookie, "/api/admin/email", "PUT", { templates: { client_confirmation: null } })).json()) as {
+      settings: { customized: string[] };
+    };
+    expect(reset.settings.customized).toEqual([]);
 
     const bad = await call(cookie, "/api/admin/email", "PUT", { replyTo: "nope" });
     expect(bad.status).toBe(400);

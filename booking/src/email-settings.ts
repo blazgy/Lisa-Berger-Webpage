@@ -1,5 +1,6 @@
 import type { Env } from "./env";
 import { HttpError } from "./http";
+import { DEFAULT_FOOTER, DEFAULT_TEMPLATES, type EmailTemplate, TEMPLATE_IDS, type TemplateId, validateFooter, validateTemplate } from "./email-templates";
 import { validateEmail, validateInt } from "./validate";
 
 export const EMAIL_KINDS = [
@@ -17,9 +18,10 @@ export interface EmailSettings {
   notifyTo: string[];
   enabled: Record<(typeof EMAIL_KINDS)[number], boolean>;
   reminderHours: number;
-  signature: string;
-  confirmationNote: string;
-  reminderNote: string;
+  footer: string;
+  templates: Record<TemplateId, EmailTemplate>;
+  /** Templates that differ from the built-in default. */
+  customized: TemplateId[];
   /** Only used outside production: recipients that may receive real e-mails. */
   testRecipients: string[];
 }
@@ -29,15 +31,14 @@ const KEYS = {
   replyTo: "email_reply_to",
   notifyTo: "email_notify_to",
   reminderHours: "email_reminder_hours",
-  signature: "email_signature",
-  confirmationNote: "email_confirmation_note",
-  reminderNote: "email_reminder_note",
+  footer: "email_footer",
   testRecipients: "email_test_recipients",
 } as const;
 const enabledKey = (kind: string) => `email_enabled_${kind}`;
+const templateKey = (id: TemplateId) => `email_tpl_${id}`;
 
 export const REMINDER_HOURS = { min: 2, max: 72 } as const;
-const LIMITS = { senderName: 60, signature: 300, note: 1000, notifyTo: 3, testRecipients: 10 } as const;
+const LIMITS = { senderName: 60, notifyTo: 3, testRecipients: 10 } as const;
 
 export function defaultEmailSettings(env: Env): EmailSettings {
   return {
@@ -46,9 +47,9 @@ export function defaultEmailSettings(env: Env): EmailSettings {
     notifyTo: [env.PRACTICE_EMAIL],
     enabled: Object.fromEntries(EMAIL_KINDS.map((k) => [k, true])) as EmailSettings["enabled"],
     reminderHours: 24,
-    signature: "Mit freundlichen Grüßen\nLisa Berger, MA",
-    confirmationNote: "",
-    reminderNote: "",
+    footer: DEFAULT_FOOTER,
+    templates: structuredClone(DEFAULT_TEMPLATES),
+    customized: [],
     testRecipients: [],
   };
 }
@@ -70,9 +71,17 @@ export async function getEmailSettings(env: Env): Promise<EmailSettings> {
   if (str(KEYS.senderName)) s.senderName = str(KEYS.senderName)!;
   if (str(KEYS.replyTo)) s.replyTo = str(KEYS.replyTo)!;
   if (str(KEYS.notifyTo)) s.notifyTo = splitList(str(KEYS.notifyTo)!);
-  if (str(KEYS.signature) !== undefined) s.signature = str(KEYS.signature)!;
-  if (str(KEYS.confirmationNote) !== undefined) s.confirmationNote = str(KEYS.confirmationNote)!;
-  if (str(KEYS.reminderNote) !== undefined) s.reminderNote = str(KEYS.reminderNote)!;
+  if (str(KEYS.footer) !== undefined) s.footer = str(KEYS.footer)!;
+  for (const id of TEMPLATE_IDS) {
+    const raw = map.get(templateKey(id));
+    if (!raw) continue;
+    try {
+      s.templates[id] = validateTemplate(id, JSON.parse(raw));
+      s.customized.push(id);
+    } catch {
+      // Stored text no longer valid (e.g. placeholder removed): fall back to the default.
+    }
+  }
   if (str(KEYS.testRecipients) !== undefined) s.testRecipients = splitList(str(KEYS.testRecipients)!);
   const hours = Number(str(KEYS.reminderHours));
   if (Number.isInteger(hours) && hours >= REMINDER_HOURS.min && hours <= REMINDER_HOURS.max) s.reminderHours = hours;
@@ -122,9 +131,25 @@ export function mergeEmailSettings(env: Env, base: EmailSettings, body: Record<s
   if (body.reminderHours !== undefined) {
     s.reminderHours = validateInt(body.reminderHours, "Erinnerung", REMINDER_HOURS.min, REMINDER_HOURS.max);
   }
-  if (body.signature !== undefined) s.signature = text(body.signature, "Grußformel", LIMITS.signature, false);
-  if (body.confirmationNote !== undefined) s.confirmationNote = text(body.confirmationNote, "Zusatztext Bestätigung", LIMITS.note, false);
-  if (body.reminderNote !== undefined) s.reminderNote = text(body.reminderNote, "Zusatztext Erinnerung", LIMITS.note, false);
+  if (body.footer !== undefined) s.footer = validateFooter(body.footer);
+  if (body.templates !== undefined) {
+    if (typeof body.templates !== "object" || body.templates === null) throw new HttpError(400, "Ungültige Vorlagen.", "invalid_input");
+    s.templates = { ...base.templates };
+    s.customized = [...base.customized];
+    for (const id of TEMPLATE_IDS) {
+      const input = (body.templates as Record<string, unknown>)[id];
+      if (input === undefined) continue;
+      if (input === null) {
+        // Reset to the default text.
+        s.templates[id] = structuredClone(DEFAULT_TEMPLATES[id]);
+        s.customized = s.customized.filter((c) => c !== id);
+        continue;
+      }
+      s.templates[id] = validateTemplate(id, input);
+      const same = JSON.stringify(s.templates[id]) === JSON.stringify(DEFAULT_TEMPLATES[id]);
+      s.customized = same ? s.customized.filter((c) => c !== id) : [...new Set([...s.customized, id])];
+    }
+  }
   if (body.enabled !== undefined) {
     if (typeof body.enabled !== "object" || body.enabled === null) throw new HttpError(400, "Ungültige Auswahl.", "invalid_input");
     for (const kind of EMAIL_KINDS) {
@@ -144,16 +169,26 @@ export async function saveEmailSettings(env: Env, s: EmailSettings): Promise<voi
     [KEYS.replyTo, s.replyTo],
     [KEYS.notifyTo, s.notifyTo.join(",")],
     [KEYS.reminderHours, String(s.reminderHours)],
-    [KEYS.signature, s.signature],
-    [KEYS.confirmationNote, s.confirmationNote],
-    [KEYS.reminderNote, s.reminderNote],
+    [KEYS.footer, s.footer],
     ...EMAIL_KINDS.map((k): [string, string] => [enabledKey(k), s.enabled[k] ? "1" : "0"]),
   ];
   if (env.ENVIRONMENT !== "production") rows.push([KEYS.testRecipients, s.testRecipients.join(",")]);
   const stmt = env.DB.prepare(
     "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
   );
-  await env.DB.batch(rows.map(([k, v]) => stmt.bind(k, v)));
+  const del = env.DB.prepare("DELETE FROM settings WHERE key = ?");
+  // Only customized texts are stored, so improvements to the defaults reach unchanged e-mails.
+  const templateStmts = TEMPLATE_IDS.map((id) =>
+    s.customized.includes(id) ? stmt.bind(templateKey(id), JSON.stringify(s.templates[id])) : del.bind(templateKey(id)),
+  );
+  await env.DB.batch([
+    ...rows.map(([k, v]) => stmt.bind(k, v)),
+    ...templateStmts,
+    // Text fields of the first version, replaced by the editable templates.
+    del.bind("email_signature"),
+    del.bind("email_confirmation_note"),
+    del.bind("email_reminder_note"),
+  ]);
 }
 
 /** Outside production, real e-mails only go to explicitly allowed test addresses or domains. */
