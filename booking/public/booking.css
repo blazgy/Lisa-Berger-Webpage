@@ -450,3 +450,136 @@
     padding: var(--space--3);
     border-radius: 1.5rem;
 }
+
+/* Step 2: therapy switcher and "next free slot" */
+.booking-service-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.35rem;
+    margin: 0 auto 0.75rem;
+    width: fit-content;
+    max-width: 100%;
+    border-radius: 999px;
+    background: rgba(43, 43, 43, 0.05);
+}
+
+.booking-service-tab {
+    border: 0;
+    background: transparent;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-family: var(--font-family--heading);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--swatch--dark-text);
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-service-tab:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.booking-service-tab[aria-pressed="true"] {
+    background: var(--swatch--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    font-weight: 600;
+}
+
+.booking-service-tab:focus-visible,
+.booking-next-free:focus-visible {
+    outline: 2px solid var(--swatch--dark-text);
+    outline-offset: 2px;
+}
+
+.booking-service-meta {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem;
+}
+
+.booking-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.booking-toolbar-label {
+    margin: 0;
+    font-family: var(--font-family--body);
+    color: #374151;
+}
+
+.booking-next-free {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--swatch--sand);
+    background: var(--swatch--sand);
+    color: var(--swatch--dark-text);
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    font-family: var(--font-family--heading);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-next-free:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.2);
+}
+
+.booking-next-info {
+    margin: 0 0 1rem;
+    padding: 0.7rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(245, 223, 156, 0.25);
+    border: 1px solid rgba(245, 223, 156, 0.8);
+    font-size: 0.9rem;
+    color: #4a3f1f;
+}
+
+.calendar-slot-btn.is-next {
+    border-color: var(--swatch--sand);
+    background: rgba(245, 223, 156, 0.35);
+    box-shadow: 0 0 0 2px rgba(245, 223, 156, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.slot-next-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6e5a1c;
+}
+
+@media screen and (max-width: 600px) {
+    .booking-service-tabs {
+        width: 100%;
+        border-radius: 1rem;
+    }
+    .booking-service-tab {
+        flex: 1 1 auto;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.88rem;
+    }
+    .booking-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .booking-next-free {
+        justify-content: center;
+    }
+}

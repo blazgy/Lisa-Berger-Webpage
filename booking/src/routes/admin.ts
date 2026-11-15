@@ -115,7 +115,7 @@ export async function adminCancelBooking(request: Request, env: Env, ctx: Execut
   }
   if (body.notify !== false) {
     const service = (await getService(env, booking.service_id)) as Service;
-    ctx.waitUntil(getEmailSettings(env).then((cfg) => sendEmail(env, cfg, clientCancellationEmail(cfg, booking, service, true))));
+    ctx.waitUntil(getEmailSettings(env).then((cfg) => sendEmail(env, cfg, clientCancellationEmail(env, cfg, booking, service, true))));
   }
   return json({ ok: true });
 }
@@ -276,6 +276,9 @@ export async function applyTemplate(request: Request, env: Env): Promise<Respons
 // Services & settings
 // ---------------------------------------------------------------------------
 
+/** Icons offered for a therapy form (Lucide names, shown on the booking cards on the website). */
+export const SERVICE_ICONS = ["user", "users", "puzzle", "baby", "heart", "heart-handshake", "smile", "leaf", "message-circle", "sparkles"];
+
 export async function getAdminServices(env: Env): Promise<Response> {
   return json(
     (await listServices(env, false)).map((s) => ({
@@ -284,23 +287,87 @@ export async function getAdminServices(env: Env): Promise<Response> {
       durationMin: s.duration_min,
       priceEur: s.price_eur,
       description: s.description,
+      icon: s.icon,
       active: s.active === 1,
     })),
   );
 }
 
+function serviceFields(body: Record<string, unknown>, current?: Service) {
+  const name = requireString(body.name ?? current?.name, "Name", 60);
+  const duration = validateInt(body.durationMin ?? current?.duration_min, "Dauer", 10, 240);
+  const price = validateInt(body.priceEur ?? current?.price_eur, "Preis", 0, 2000);
+  const description = optionalString(body.description ?? current?.description ?? "", "Beschreibung", 200) ?? "";
+  const icon = body.icon ?? current?.icon ?? "user";
+  if (typeof icon !== "string" || !SERVICE_ICONS.includes(icon)) throw new HttpError(400, "Ungültiges Symbol.", "invalid_input");
+  const active = body.active === undefined ? (current?.active ?? 1) : body.active ? 1 : 0;
+  return { name, duration, price, description, icon, active };
+}
+
+/** URL-friendly id from the name, e.g. "Kinder- & Jugendtherapie" -> "kinder-jugendtherapie". */
+function slugify(name: string): string {
+  const map: Record<string, string> = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
+  const slug = name
+    .toLowerCase()
+    .replace(/[äöüß]/g, (c) => map[c])
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return slug || "therapieform";
+}
+
+export async function createService(request: Request, env: Env): Promise<Response> {
+  const f = serviceFields(await readJson(request));
+  const base = slugify(f.name);
+  let id = base;
+  for (let i = 2; await getService(env, id); i++) id = `${base}-${i}`;
+  const order = await env.DB.prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM services").first<{ next: number }>();
+  await env.DB.prepare(
+    "INSERT INTO services (id, name, duration_min, price_eur, description, icon, sort_order, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  )
+    .bind(id, f.name, f.duration, f.price, f.description, f.icon, order?.next ?? 1, f.active)
+    .run();
+  return json({ id }, 201);
+}
+
 export async function updateService(request: Request, env: Env, id: string): Promise<Response> {
   const service = await getService(env, validateId(id));
   if (!service) throw new HttpError(404, "Therapieform nicht gefunden.", "not_found");
-  const body = await readJson(request);
-  const name = requireString(body.name ?? service.name, "Name", 60);
-  const duration = validateInt(body.durationMin ?? service.duration_min, "Dauer", 10, 240);
-  const price = validateInt(body.priceEur ?? service.price_eur, "Preis", 0, 2000);
-  const description = optionalString(body.description ?? service.description, "Beschreibung", 200) ?? "";
-  const active = body.active === undefined ? service.active : body.active ? 1 : 0;
-  await env.DB.prepare("UPDATE services SET name = ?, duration_min = ?, price_eur = ?, description = ?, active = ? WHERE id = ?")
-    .bind(name, duration, price, description, active, service.id)
+  const f = serviceFields(await readJson(request), service);
+  await env.DB.prepare(
+    "UPDATE services SET name = ?, duration_min = ?, price_eur = ?, description = ?, icon = ?, active = ? WHERE id = ?",
+  )
+    .bind(f.name, f.duration, f.price, f.description, f.icon, f.active, service.id)
     .run();
+  return json({ ok: true });
+}
+
+/** Remove a therapy form that was never used. Used ones can only be switched off (history stays intact). */
+export async function deleteService(env: Env, id: string): Promise<Response> {
+  const service = await getService(env, validateId(id));
+  if (!service) throw new HttpError(404, "Therapieform nicht gefunden.", "not_found");
+  const used = await env.DB.prepare(
+    `SELECT (SELECT COUNT(*) FROM slots WHERE service_id = ?) AS slots,
+            (SELECT COUNT(*) FROM bookings WHERE service_id = ?) AS bookings,
+            (SELECT COUNT(*) FROM template_items WHERE service_id = ?) AS template`,
+  )
+    .bind(service.id, service.id, service.id)
+    .first<{ slots: number; bookings: number; template: number }>();
+  if (used && (used.slots || used.bookings || used.template)) {
+    const where = [
+      used.slots ? "freigegebene Termine" : "",
+      used.bookings ? "Buchungen" : "",
+      used.template ? "Einträge in der Wochen-Vorlage" : "",
+    ].filter(Boolean).join(", ");
+    throw new HttpError(
+      409,
+      `„${service.name}“ hat noch ${where}. Entfernen Sie diese zuerst – oder nehmen Sie einfach das Häkchen bei „online buchbar“ heraus.`,
+      "service_in_use",
+    );
+  }
+  await env.DB.prepare("DELETE FROM services WHERE id = ?").bind(service.id).run();
   return json({ ok: true });
 }
 
@@ -386,7 +453,7 @@ export async function sendTestEmail(request: Request, env: Env): Promise<Respons
   const body = await readJson<{ to?: unknown }>(request);
   const cfg = await getEmailSettings(env);
   const to = body.to === undefined || body.to === "" ? cfg.notifyTo[0] : validateEmail(body.to);
-  const result = await sendEmail(env, cfg, testEmail(cfg, to));
+  const result = await sendEmail(env, cfg, testEmail(env, cfg, to));
   return json({ to, ...result });
 }
 

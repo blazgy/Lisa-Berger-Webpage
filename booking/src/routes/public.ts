@@ -214,8 +214,8 @@ export async function cancelManagedBooking(request: Request, env: Env, ctx: Exec
     (async () => {
       const cfg = await getEmailSettings(env);
       await Promise.all([
-        sendEmail(env, cfg, clientCancellationEmail(cfg, booking, service, false)),
-        sendEmail(env, cfg, practiceCancellationEmail(cfg, booking, service)),
+        sendEmail(env, cfg, clientCancellationEmail(env, cfg, booking, service, false)),
+        sendEmail(env, cfg, practiceCancellationEmail(env, cfg, booking, service)),
       ]);
     })(),
   );

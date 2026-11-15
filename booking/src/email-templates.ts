@@ -42,13 +42,14 @@ export const PLACEHOLDER_LABELS: Record<string, string> = {
   telefon: "Telefon der Klient:in",
   anmerkungen: "Anmerkungen der Klient:in",
   kontaktdaten: "Tabelle mit Kontaktdaten",
+  handschrift: "Handschrift „Ich freue mich darauf, Sie kennenzulernen!“ (nur bei Erstgesprächen)",
 };
 
 const COMMON = ["name", "termin", "therapieform", "dauer", "preis", "art", "ort", "termindetails"];
 const CONTACT = ["email", "telefon", "anmerkungen", "kontaktdaten"];
 
 export const TEMPLATE_PLACEHOLDERS: Record<TemplateId, string[]> = {
-  client_confirmation: [...COMMON, "absagefrist", "absagehinweis", "button"],
+  client_confirmation: [...COMMON, "absagefrist", "absagehinweis", "button", "handschrift"],
   client_reminder: [...COMMON, "absagefrist", "absagehinweis"],
   client_cancellation: COMMON,
   client_cancellation_by_practice: COMMON,
@@ -89,6 +90,8 @@ vielen Dank für Ihre Buchung. Ihr Termin ist hiermit bestätigt:
 {{button}}
 
 Den Termin für Ihren Kalender finden Sie im Anhang (termin.ics). Bitte geben Sie den Link nicht weiter – er ermöglicht die Absage Ihres Termins.
+
+{{handschrift}}
 
 ${SIGNATURE}`,
     hintOpen:
@@ -220,7 +223,11 @@ export function validateFooter(value: unknown): string {
 /** A placeholder value: inline text, or a block (table, button) with its own HTML. */
 export interface Value {
   text: string;
+  /** Inline HTML (already escaped). */
   html?: string;
+  /** HTML that replaces the whole paragraph when the placeholder stands alone in it. */
+  alone?: string;
+  /** Block-only value (table, button, image): never rendered inside running text. */
   block?: boolean;
 }
 export type Values = Record<string, Value>;
@@ -246,29 +253,31 @@ export function renderText(template: string, values: Values): string {
   return stripBold(template.replace(PLACEHOLDER_RE, (_, key: string) => values[key.toLowerCase()]?.text ?? ""));
 }
 
-const P_STYLE = "margin:0 0 16px;line-height:1.5;";
+/** Paragraph style of the letter design (Lora, generous line height). */
+export const P_STYLE = "margin:0 0 20px;font-family:Lora,Georgia,'Times New Roman',serif;font-size:17px;line-height:1.75;color:#2B2B2B;";
 
-/** Body HTML: paragraphs separated by blank lines; a paragraph that is only a block placeholder renders the block. */
+/**
+ * Body HTML: paragraphs separated by blank lines. A paragraph that is only one placeholder
+ * renders that placeholder's own block (table, button, image, styled hint) instead.
+ */
 export function renderBodyHtml(template: string, values: Values): string {
   const parts: string[] = [];
   let buttonPlaced = false;
   for (const para of template.split(/\n\s*\n/)) {
     const trimmed = para.trim();
     if (!trimmed) continue;
-    const only = trimmed.match(/^\{\{\s*([a-zA-Z]+)\s*\}\}$/);
-    const v = only && values[only[1].toLowerCase()];
-    if (v && (v.block || v.html !== undefined)) {
-      if (only![1].toLowerCase() === "button") buttonPlaced = true;
-      if (v.block) {
-        parts.push(v.html ?? "");
-        continue;
-      }
-    }
     if (/\{\{\s*button\s*\}\}/i.test(trimmed)) buttonPlaced = true;
-    parts.push(`<p style="${P_STYLE}">${renderInline(trimmed, values)}</p>`);
+    const only = trimmed.match(/^\{\{\s*([a-zA-ZäöüÄÖÜß]+)\s*\}\}$/);
+    const v = only ? values[only[1].toLowerCase()] : undefined;
+    if (v && v.alone !== undefined) {
+      if (v.alone) parts.push(v.alone);
+      continue;
+    }
+    const html = renderInline(trimmed, values);
+    if (html.replace(/<br>/g, "").trim()) parts.push(`<p style="${P_STYLE}">${html}</p>`);
   }
   // The button is fixed: if it was removed from the text, it still appears at the end.
-  if (!buttonPlaced && values.button?.html) parts.push(values.button.html);
+  if (!buttonPlaced && values.button?.alone) parts.push(values.button.alone);
   return parts.join("\n");
 }
 

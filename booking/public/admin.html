@@ -9,8 +9,8 @@
     <meta name="referrer" content="no-referrer">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="stylesheet" href="styles.css?v=1.4">
-    <link rel="stylesheet" href="booking.css?v=1">
-    <link rel="stylesheet" href="admin.css?v=3">
+    <link rel="stylesheet" href="booking.css?v=2">
+    <link rel="stylesheet" href="admin.css?v=4">
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 
@@ -209,7 +209,10 @@
                         </form>
 
                         <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Therapieformen &amp; Preise</h3>
-                        <div id="services-list" class="mb-6"></div>
+                        <p class="form-hint-admin mb-2">Nur Therapieformen mit Häkchen bei „Online buchbar“ erscheinen im Buchungsfenster der Website. Die Preise im Text der Website werden davon nicht geändert.</p>
+                        <div id="services-list"></div>
+                        <div id="svc-add-box"></div>
+                        <button type="button" id="svc-add-btn" class="btn-secondary svc-add-btn mb-6"><i data-lucide="plus" style="width:14px;height:14px;"></i> Therapieform hinzufügen</button>
 
                         <h3 class="u-text-style-small font-bold text-gray-500 uppercase tracking-wider mb-2">Kalender-Abo (.ics)</h3>
                         <p class="form-hint-admin mb-2">Diese private Adresse in Apple Kalender, Outlook oder Thunderbird als „Kalender-Abonnement“ hinzufügen – gebuchte Termine erscheinen dann automatisch. Die Adresse enthält Namen und Kontaktdaten: bitte nicht weitergeben. Bei Verdacht einfach neu erzeugen (die alte Adresse funktioniert dann nicht mehr).</p>
@@ -360,7 +363,7 @@
         <span id="toast-message"></span>
     </div>
 
-    <script src="admin.js?v=3" defer></script>
+    <script src="admin.js?v=4" defer></script>
 </body>
 
 </html>

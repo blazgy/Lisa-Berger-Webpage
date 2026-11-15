@@ -36,7 +36,7 @@ export async function sendDueReminders(env: Env, now = Date.now(), transport: Tr
     const service = await getService(env, booking.service_id);
     if (!service) continue;
     const deadline = booking.start_at - settings.cancel_window_hours * HOUR;
-    await sendEmail(env, cfg, clientReminderEmail(cfg, booking, service, deadline, now), transport);
+    await sendEmail(env, cfg, clientReminderEmail(env, cfg, booking, service, deadline, now), transport);
     sent++;
   }
   return sent;

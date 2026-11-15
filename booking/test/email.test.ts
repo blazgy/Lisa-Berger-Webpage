@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it } from "vitest";
-import { attemptDelivery, processEmailQueue, resendEmail, sendEmail, testEmail, type Transport } from "../src/email";
+import { attemptDelivery, clientConfirmationEmail, processEmailQueue, resendEmail, sendEmail, testEmail, type Transport } from "../src/email";
 import { getEmailSettings, mergeEmailSettings, saveEmailSettings } from "../src/email-settings";
 import type { Env } from "../src/env";
 import { sendDueReminders } from "../src/reminders";
@@ -50,7 +50,7 @@ describe("e-mail delivery", () => {
   it("only stores the e-mail in log mode", async () => {
     const cfg = await getEmailSettings(env);
     const { sent, transport } = recordingTransport();
-    const result = await sendEmail(env, cfg, testEmail(cfg, "a@example.at"), transport);
+    const result = await sendEmail(env, cfg, testEmail(env, cfg, "a@example.at"), transport);
     expect(result.status).toBe("logged");
     expect(sent).toHaveLength(0);
   });
@@ -59,7 +59,7 @@ describe("e-mail delivery", () => {
     const e = smtpEnv();
     const cfg = await getEmailSettings(e);
     const { sent, transport } = recordingTransport();
-    const result = await sendEmail(e, cfg, testEmail(cfg, "a@example.at"), transport);
+    const result = await sendEmail(e, cfg, testEmail(e, cfg, "a@example.at"), transport);
     expect(result.status).toBe("sent");
     expect(sent).toEqual([{ to: ["a@example.at"], subject: "[TEST] Test-E-Mail der Online-Terminbuchung", fromName: "Praxis Lisa Berger" }]);
     expect(await logRow(result.id!)).toMatchObject({ status: "sent", attempts: 1, payload: null, error: null });
@@ -69,7 +69,7 @@ describe("e-mail delivery", () => {
     const e = smtpEnv();
     const cfg = await getEmailSettings(e);
     const { transport } = recordingTransport(10);
-    const first = await sendEmail(e, cfg, testEmail(cfg, "a@example.at"), transport);
+    const first = await sendEmail(e, cfg, testEmail(e, cfg, "a@example.at"), transport);
     expect(first.status).toBe("pending");
     const row = await logRow(first.id!);
     expect(row).toMatchObject({ status: "pending", attempts: 1, error: "535 Authentication failed" });
@@ -96,7 +96,7 @@ describe("e-mail delivery", () => {
     const e = smtpEnv();
     const cfg = await getEmailSettings(e);
     const { sent, transport } = recordingTransport(1);
-    const first = await sendEmail(e, cfg, testEmail(cfg, "a@example.at"), transport);
+    const first = await sendEmail(e, cfg, testEmail(e, cfg, "a@example.at"), transport);
     await env.DB.prepare("UPDATE email_log SET next_attempt_at = 0 WHERE id = ?").bind(first.id).run();
     const [a, b] = await Promise.all([attemptDelivery(e, first.id!, transport), attemptDelivery(e, first.id!, transport)]);
     expect([a.status, b.status].sort()).toEqual(["pending", "sent"]);
@@ -107,7 +107,7 @@ describe("e-mail delivery", () => {
     const e = smtpEnv();
     let cfg = await getEmailSettings(e);
     const { sent, transport } = recordingTransport();
-    const mail = { ...testEmail(cfg, "x@example.at"), kind: "client_confirmation" as const };
+    const mail = { ...testEmail(e, cfg, "x@example.at"), kind: "client_confirmation" as const };
 
     expect((await sendEmail(e, cfg, mail, transport)).status).toBe("blocked");
     cfg = mergeEmailSettings(e, cfg, { testRecipients: "@example.at" });
@@ -119,7 +119,7 @@ describe("e-mail delivery", () => {
     const e = smtpEnv();
     const cfg = mergeEmailSettings(e, await getEmailSettings(e), { enabled: { practice_new: false }, testRecipients: "@example.at" });
     const { sent, transport } = recordingTransport();
-    const mail = { ...testEmail(cfg, "x@example.at"), kind: "practice_new" as const };
+    const mail = { ...testEmail(e, cfg, "x@example.at"), kind: "practice_new" as const };
     expect((await sendEmail(e, cfg, mail, transport)).status).toBe("disabled");
     expect(sent).toHaveLength(0);
   });
@@ -132,6 +132,31 @@ describe("e-mail delivery", () => {
     expect(() => mergeEmailSettings(base, cfg, { replyTo: "not-an-email" })).toThrow();
     expect(() => mergeEmailSettings(base, cfg, { notifyTo: "a@example.at, b@example.at, c@example.at, d@example.at" })).toThrow();
     expect(() => mergeEmailSettings(base, cfg, { reminderHours: 1 })).toThrow();
+  });
+});
+
+describe("e-mail design", () => {
+  it("uses the letter layout with logo, and the handwriting only for first sessions", async () => {
+    const cfg = await getEmailSettings(env);
+    const service = { id: "psychotherapie", name: "Psychotherapie", duration_min: 50, price_eur: 90, description: "", icon: "", sort_order: 0, active: 1 };
+    const start = Date.now() + 7 * 86_400_000;
+    const booking = {
+      id: "b1", slot_id: "s1", service_id: "psychotherapie", session_kind: "erstgespraech" as const, start_at: start, end_at: start + 3_000_000,
+      name: "Eva <Beispiel>", email: "eva@example.at", phone: null, notes: null, status: "confirmed" as const,
+      cancelled_by: null, cancelled_at: null, cancel_token_hash: "", consent_at: 0, created_at: 0,
+    };
+    const first = clientConfirmationEmail(env, cfg, booking, service, "TOKEN", start - 48 * HOUR);
+    expect(first.html).toContain(`${env.PUBLIC_BASE_URL}/email/logo.png`);
+    expect(first.html).toContain("/email/handschrift.png");
+    expect(first.html).toContain("Vöcklabruck, ");
+    expect(first.html).toContain("Eva &lt;Beispiel&gt;");
+    expect(first.html).toContain("font-style:italic"); // cancellation hint as a note
+    expect(first.text).toContain("Ich freue mich darauf, Sie kennenzulernen!");
+
+    const followUp = clientConfirmationEmail(env, cfg, { ...booking, session_kind: "folgetermin" }, service, "TOKEN", start - 48 * HOUR);
+    expect(followUp.html).not.toContain("handschrift.png");
+    expect(followUp.text).not.toContain("kennenzulernen");
+    expect(followUp.html).toContain("termin.html#t=TOKEN");
   });
 });
 

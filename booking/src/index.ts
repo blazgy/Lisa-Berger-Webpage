@@ -98,6 +98,8 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, path:
     if (method === "DELETE" && (m = path.match(/^\/api\/admin\/template\/([^/]+)$/))) return admin.deleteTemplateItem(env, m[1]);
     if (method === "GET" && path === "/api/admin/services") return admin.getAdminServices(env);
     if (method === "PUT" && (m = path.match(/^\/api\/admin\/services\/([^/]+)$/))) return admin.updateService(request, env, m[1]);
+    if (method === "POST" && path === "/api/admin/services") return admin.createService(request, env);
+    if (method === "DELETE" && (m = path.match(/^\/api\/admin\/services\/([^/]+)$/))) return admin.deleteService(env, m[1]);
     if (method === "GET" && path === "/api/admin/settings") return admin.getAdminSettings(env);
     if (method === "PUT" && path === "/api/admin/settings") return admin.updateSettings(request, env);
     if (method === "POST" && path === "/api/admin/calendar-feed") return admin.regenerateFeed(env);

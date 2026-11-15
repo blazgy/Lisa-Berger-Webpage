@@ -20,6 +20,7 @@
     date: null,
     slot: null,
     month: null, // { y, m } (m: 0-11)
+    highlightSlotId: null, // slot marked by "Nächster freier Termin"
     turnstileWidget: null,
     turnstileToken: null,
     submitting: false,
@@ -120,7 +121,14 @@
         els.times,
       ),
     );
-    els.step2Title = h("p", { class: "u-text-style-main text-gray-700 mb-6 text-center" });
+    // Step 2 header: switch therapy form without going back, and jump to the next free slot.
+    els.serviceTabs = h("div", { class: "booking-service-tabs", role: "group", "aria-label": "Therapieform wechseln" });
+    els.step2Title = h("p", { class: "booking-service-meta" });
+    els.nextFree = h("button", { type: "button", class: "booking-next-free", onclick: showNextFree },
+      icon("calendar-check", "icon-sm"), h("span", null, "Nächster freier Termin"));
+    els.nextFreeInfo = h("p", { class: "booking-next-info hidden", "aria-live": "polite" });
+    els.toolbar = h("div", { class: "booking-toolbar" },
+      h("p", { class: "booking-toolbar-label" }, "Wählen Sie einen freien Termin"), els.nextFree);
     els.noSlots = h(
       "div",
       { class: "no-slots-message hidden text-center p-8 glass-panel rounded-2xl" },
@@ -180,7 +188,7 @@
         h("p", { class: "u-text-style-main text-gray-700 mb-6 text-center" }, "Bitte wählen Sie die gewünschte Therapieform:"),
         els.step1Status, els.services),
       2: h("div", { class: "booking-step", "data-step": "2" },
-        backButton(1), els.step2Title, els.step2Error, els.calendar, els.noSlots),
+        backButton(1), els.serviceTabs, els.step2Title, els.step2Error, els.toolbar, els.nextFreeInfo, els.calendar, els.noSlots),
       3: h("div", { class: "booking-step", "data-step": "3" },
         backButton(2),
         h("h3", { class: "u-text-style-h4 u-weight-medium text-dark-text mb-4 text-center" }, "Ihre Kontaktdaten"),
@@ -254,8 +262,9 @@
   }
 
   function reset() {
-    state.service = state.slot = state.date = null;
+    state.service = state.slot = state.date = state.highlightSlotId = null;
     state.slots = [];
+    els.nextFreeInfo.classList.add("hidden");
     state.submitting = false;
     els.form.reset();
     showError(els.formError, "");
@@ -293,10 +302,45 @@
   async function selectService(service) {
     state.service = service;
     state.date = state.slot = null;
-    els.step2Title.textContent = `${service.name}: Wählen Sie einen freien Termin`;
+    state.highlightSlotId = null;
+    els.nextFreeInfo.classList.add("hidden");
+    els.step2Title.textContent = `${service.durationMin} Minuten · ${service.priceEur} €${service.description ? ` · ${service.description}` : ""}`;
+    renderServiceTabs();
     els.nameHint.classList.toggle("hidden", service.id !== "spieltherapie");
-    showStep(2);
+    if (!steps[2].classList.contains("active")) showStep(2);
     await loadSlots();
+  }
+
+  function renderServiceTabs() {
+    els.serviceTabs.classList.toggle("hidden", state.services.length < 2);
+    els.serviceTabs.replaceChildren(
+      ...state.services.map((s) =>
+        h("button", {
+          type: "button",
+          class: "booking-service-tab",
+          "aria-pressed": state.service && state.service.id === s.id ? "true" : "false",
+          onclick: () => { if (!state.service || state.service.id !== s.id) selectService(s); },
+        }, s.name)),
+    );
+  }
+
+  /** Jump to the earliest free slot: show its month, select its day and highlight the time. */
+  function showNextFree() {
+    const slot = state.slots[0];
+    if (!slot) return;
+    const [y, m] = slot.date.split("-").map(Number);
+    state.month = { y, m: m - 1 };
+    state.date = slot.date;
+    state.slot = null;
+    state.highlightSlotId = slot.id;
+    els.nextFreeInfo.textContent = `Nächster freier Termin: ${formatDateLong(slot.date)}, ${slot.time} Uhr – zum Buchen die Uhrzeit anklicken.`;
+    els.nextFreeInfo.classList.remove("hidden");
+    renderMonth();
+    const btn = els.times.querySelector(".is-next");
+    if (btn) {
+      btn.focus({ preventScroll: true });
+      btn.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
   }
 
   async function loadSlots() {
@@ -314,8 +358,10 @@
       if (!state.byDate.has(s.date)) state.byDate.set(s.date, []);
       state.byDate.get(s.date).push(s);
     }
+    state.slots.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
     const empty = state.slots.length === 0;
     els.calendar.classList.toggle("hidden", empty);
+    els.toolbar.classList.toggle("hidden", empty);
     els.noSlots.classList.toggle("hidden", !empty);
     if (empty) return;
     const first = state.slots[0].date.split("-").map(Number);
@@ -370,6 +416,7 @@
   function selectDate(date) {
     state.date = date;
     state.slot = null;
+    if (!state.slots.some((s) => s.id === state.highlightSlotId && s.date === date)) els.nextFreeInfo.classList.add("hidden");
     renderMonth();
   }
 
@@ -379,9 +426,15 @@
       return;
     }
     els.times.replaceChildren(
-      ...(state.byDate.get(state.date) || []).map((slot) =>
-        h("button", { type: "button", class: "calendar-slot-btn", onclick: () => selectSlot(slot) }, `${slot.time} Uhr`),
-      ),
+      ...(state.byDate.get(state.date) || []).map((slot) => {
+        const isNext = slot.id === state.highlightSlotId;
+        return h("button", {
+          type: "button",
+          class: `calendar-slot-btn${isNext ? " is-next" : ""}`,
+          "aria-label": isNext ? `${slot.time} Uhr, nächster freier Termin` : `${slot.time} Uhr`,
+          onclick: () => selectSlot(slot),
+        }, `${slot.time} Uhr`, isNext ? h("span", { class: "slot-next-tag" }, "nächster frei") : null);
+      }),
     );
   }
 

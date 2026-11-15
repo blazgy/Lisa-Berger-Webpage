@@ -304,6 +304,43 @@ describe("admin booking management", () => {
     expect(services.find((s) => s.id === "spieltherapie")).toMatchObject({ priceEur: 95, durationMin: 60 });
     await call("/api/admin/services/spieltherapie", { method: "PUT", cookie, body: { priceEur: 90, durationMin: 50 } });
   });
+
+  it("adds, hides and removes a therapy form", async () => {
+    const cookie = await login();
+    const created = await call("/api/admin/services", {
+      cookie,
+      body: { name: "Kinder- & Jugendtherapie", durationMin: 45, priceEur: 80, description: "Für Kinder ab 6", icon: "baby", active: true },
+    });
+    expect(created.status, await created.clone().text()).toBe(201);
+    const { id } = (await created.json()) as { id: string };
+    expect(id).toBe("kinder-jugendtherapie");
+
+    const publicList = async () => ((await (await call("/api/services")).json()) as { id: string; icon: string }[]);
+    expect((await publicList()).find((s) => s.id === id)).toMatchObject({ icon: "baby" });
+
+    // Unchecking "online buchbar" hides it from the website.
+    expect((await call(`/api/admin/services/${id}`, { method: "PUT", cookie, body: { active: false } })).status).toBe(200);
+    expect((await publicList()).some((s) => s.id === id)).toBe(false);
+
+    // Same name again gets its own id; invalid icon is rejected.
+    const again = (await (await call("/api/admin/services", { cookie, body: { name: "Kinder- & Jugendtherapie", durationMin: 45, priceEur: 80 } })).json()) as { id: string };
+    expect(again.id).toBe("kinder-jugendtherapie-2");
+    expect((await call("/api/admin/services", { cookie, body: { name: "X", durationMin: 45, priceEur: 80, icon: "skull" } })).status).toBe(400);
+
+    // A form with released slots cannot be removed …
+    await call(`/api/admin/services/${id}`, { method: "PUT", cookie, body: { active: true } });
+    const slotId = await createSlot(cookie, futureDate(10), "09:00", id);
+    const blocked = await call(`/api/admin/services/${id}`, { method: "DELETE", cookie });
+    expect(blocked.status).toBe(409);
+    expect(((await blocked.json()) as { error: string }).error).toContain("online buchbar");
+
+    // … but can once nothing refers to it.
+    await call(`/api/admin/slots/${slotId}`, { method: "DELETE", cookie });
+    expect((await call(`/api/admin/services/${id}`, { method: "DELETE", cookie })).status).toBe(200);
+    expect((await call(`/api/admin/services/${again.id}`, { method: "DELETE", cookie })).status).toBe(200);
+    const admins = (await (await call("/api/admin/services", { cookie })).json()) as { id: string }[];
+    expect(admins.map((s) => s.id)).toEqual(["psychotherapie", "paartherapie", "spieltherapie"]);
+  });
 });
 
 describe("data retention", () => {

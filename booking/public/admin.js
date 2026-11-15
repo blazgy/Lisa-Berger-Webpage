@@ -220,34 +220,92 @@
       );
       if (current) sel.value = current;
     });
-    $("services-list").replaceChildren(
-      ...state.services.map((s) => {
-        const name = h("input", { type: "text", value: s.name, maxlength: "60", class: "form-input-date", "aria-label": "Name" });
-        const duration = h("input", { type: "number", value: String(s.durationMin), min: "10", max: "240", class: "form-input-date", "aria-label": "Dauer in Minuten" });
-        const price = h("input", { type: "number", value: String(s.priceEur), min: "0", max: "2000", class: "form-input-date", "aria-label": "Preis in Euro" });
-        const active = h("input", { type: "checkbox", class: "form-checkbox", checked: s.active });
-        return h("div", { class: "service-row" },
-          h("div", null, h("label", { class: "input-label" }, "Therapieform"), name),
-          h("div", null, h("label", { class: "input-label" }, "Minuten"), duration),
-          h("div", null, h("label", { class: "input-label" }, "Preis €"), price),
-          h("label", { class: "check-row", style: "margin:0 0 10px;" }, active, "online"),
-          h("button", {
-            type: "button",
-            class: "btn-secondary",
-            onclick: () =>
-              run(async () => {
-                await api(`/api/admin/services/${encodeURIComponent(s.id)}`, "PUT", {
-                  name: name.value,
-                  durationMin: Number(duration.value),
-                  priceEur: Number(price.value),
-                  active: active.checked,
-                });
-                await loadServices();
-              }, "Gespeichert"),
-          }, "Speichern"));
-      }),
-    );
+    $("services-list").replaceChildren(...state.services.map((svc) => serviceEditor(svc)));
+    refreshIcons();
   }
+
+  const SERVICE_ICONS = [
+    ["user", "Person"], ["users", "Zwei Personen"], ["puzzle", "Puzzle"], ["baby", "Kind"], ["heart", "Herz"],
+    ["heart-handshake", "Herz & Hand"], ["smile", "Lächeln"], ["leaf", "Blatt"], ["message-circle", "Sprechblase"], ["sparkles", "Funkeln"],
+  ];
+
+  /** Editor card for one therapy form; without `svc` it is the "add" form. */
+  function serviceEditor(svc) {
+    const isNew = !svc;
+    const s = svc || { name: "", durationMin: 50, priceEur: 90, description: "", icon: "user", active: true };
+    const uid = isNew ? "new" : s.id;
+    const field = (label, input) => h("div", { class: "svc-field" }, h("label", { class: "input-label", for: input.id }, label), input);
+    const name = h("input", { type: "text", id: `svc-${uid}-name`, value: s.name, maxlength: "60", required: true, class: "form-input-date", placeholder: "z. B. Kinder- und Jugendtherapie" });
+    const duration = h("input", { type: "number", id: `svc-${uid}-min`, value: String(s.durationMin), min: "10", max: "240", class: "form-input-date" });
+    const price = h("input", { type: "number", id: `svc-${uid}-price`, value: String(s.priceEur), min: "0", max: "2000", class: "form-input-date" });
+    const description = h("input", { type: "text", id: `svc-${uid}-desc`, value: s.description || "", maxlength: "200", class: "form-input-date", placeholder: "Kurzer Satz auf der Buchungskarte (optional)" });
+    const iconSelect = h("select", { id: `svc-${uid}-icon`, class: "form-select" },
+      ...SERVICE_ICONS.map(([v, label]) => h("option", { value: v, selected: v === s.icon }, label)));
+    const iconPreview = h("span", { class: "svc-icon-preview", "aria-hidden": "true" }, icon(s.icon || "user", 18));
+    iconSelect.addEventListener("change", () => { iconPreview.replaceChildren(icon(iconSelect.value, 18)); refreshIcons(); });
+    const active = h("input", { type: "checkbox", id: `svc-${uid}-active`, class: "form-checkbox", checked: s.active });
+    const data = () => ({
+      name: name.value,
+      durationMin: Number(duration.value),
+      priceEur: Number(price.value),
+      description: description.value,
+      icon: iconSelect.value,
+      active: active.checked,
+    });
+
+    const actions = [];
+    if (isNew) {
+      actions.push(
+        h("button", { type: "button", class: "btn-primary-admin", onclick: () => run(async () => {
+          await api("/api/admin/services", "POST", data());
+          $("svc-add-box").replaceChildren();
+          $("svc-add-btn").hidden = false;
+          await loadServices();
+        }, "Therapieform hinzugefügt") }, "Hinzufügen"),
+        h("button", { type: "button", class: "btn-secondary", onclick: () => { $("svc-add-box").replaceChildren(); $("svc-add-btn").hidden = false; } }, "Abbrechen"),
+      );
+    } else {
+      actions.push(h("button", { type: "button", class: "btn-secondary", onclick: () => run(async () => {
+        await api(`/api/admin/services/${encodeURIComponent(s.id)}`, "PUT", data());
+        await loadServices();
+      }, "Gespeichert") }, "Speichern"));
+      const remove = h("button", { type: "button", class: "btn-text-danger" }, "Entfernen");
+      let armed = false;
+      remove.addEventListener("click", () => {
+        if (!armed) {
+          armed = true;
+          remove.textContent = "Wirklich entfernen?";
+          setTimeout(() => { armed = false; remove.textContent = "Entfernen"; }, 4000);
+          return;
+        }
+        run(async () => {
+          await api(`/api/admin/services/${encodeURIComponent(s.id)}`, "DELETE");
+          await loadServices();
+        }, "Therapieform entfernt");
+      });
+      actions.push(remove);
+    }
+
+    return h("div", { class: `service-card${s.active ? "" : " is-inactive"}${isNew ? " is-new" : ""}` },
+      h("div", { class: "svc-grid" },
+        field("Therapieform", name),
+        field("Minuten", duration),
+        field("Preis €", price)),
+      h("div", { class: "svc-grid svc-grid-2" },
+        field("Beschreibung auf der Website", description),
+        h("div", { class: "svc-field" }, h("label", { class: "input-label", for: iconSelect.id }, "Symbol"), h("div", { class: "svc-icon-row" }, iconPreview, iconSelect))),
+      h("div", { class: "svc-foot" },
+        h("label", { class: "check-row m-0", for: active.id }, active,
+          h("span", null, h("strong", null, "Online buchbar"), h("small", { class: "svc-hint" }, " – erscheint im Buchungsfenster der Website"))),
+        h("div", { class: "svc-actions" }, actions)));
+  }
+
+  $("svc-add-btn").addEventListener("click", () => {
+    $("svc-add-btn").hidden = true;
+    $("svc-add-box").replaceChildren(serviceEditor(null));
+    refreshIcons();
+    $("svc-new-name").focus();
+  });
 
   // ------------------------------------------------------------------ settings & feed
 

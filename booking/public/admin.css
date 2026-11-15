@@ -839,3 +839,132 @@
     opacity: 0.5;
     cursor: default;
 }
+
+/* Therapy forms */
+.service-card {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 10px;
+}
+
+.service-card.is-inactive {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.service-card.is-inactive .svc-grid:first-child input {
+    color: #6b7280;
+}
+
+.service-card.is-new {
+    border: 1px dashed var(--swatch--sage);
+    background: rgba(179, 218, 182, 0.08);
+}
+
+.svc-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+}
+
+.svc-grid-2 {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1.4fr);
+}
+
+.svc-field {
+    min-width: 0;
+}
+
+.svc-icon-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.svc-icon-row .form-select {
+    flex: 1;
+    min-width: 0;
+}
+
+.svc-icon-preview {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #6b7280;
+}
+
+.svc-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.svc-hint {
+    color: #6b7280;
+    font-size: 0.78rem;
+}
+
+.svc-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-primary-admin {
+    background: var(--swatch--sand);
+    border: 1px solid var(--swatch--sand);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: var(--font-family--heading);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary-admin:hover {
+    filter: brightness(0.97);
+}
+
+.btn-text-danger {
+    background: none;
+    border: 0;
+    padding: 8px 6px;
+    font-family: var(--font-family--heading);
+    font-size: 0.8rem;
+    color: #b91c1c;
+    cursor: pointer;
+}
+
+.btn-text-danger:hover {
+    text-decoration: underline;
+}
+
+.svc-add-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+@media screen and (max-width: 640px) {
+    .svc-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .svc-grid > .svc-field:first-child {
+        grid-column: 1 / -1;
+    }
+    .svc-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
