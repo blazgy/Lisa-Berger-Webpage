@@ -16,6 +16,7 @@ import { checkBookingSpam, createFormToken } from "../spam";
 import { optionalString, validateEmail, validateId, validateName, validatePhone } from "../validate";
 
 const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
 
 function publicService(s: Service) {
   return {
@@ -91,13 +92,25 @@ export async function createBooking(request: Request, env: Env, ctx: ExecutionCo
   }
   await checkBookingSpam(env, body);
 
-  const [service, settings, slot] = await Promise.all([
+  const now = Date.now();
+  const [service, settings, slot, recent] = await Promise.all([
     getService(env, serviceId),
     getSettings(env),
     env.DB.prepare("SELECT * FROM slots WHERE id = ?").bind(slotId).first<{ service_id: string; start_at: number; end_at: number; status: string }>(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM bookings WHERE created_at > ?").bind(now - DAY).first<{ n: number }>(),
   ]);
-  const now = Date.now();
   if (!service || !service.active) throw new HttpError(400, "Diese Therapieform ist derzeit nicht online buchbar.", "service_unavailable");
+  // Bookings are confirmed without verifying the e-mail address, and the per-IP rate limit can be
+  // sidestepped with many addresses. This overall limit keeps one sender from filling the calendar
+  // or making the practice mailbox send unlimited e-mails. Cancelled bookings count as well, so
+  // book-cancel-rebook loops are covered.
+  if ((recent?.n ?? 0) >= settings.max_bookings_per_day) {
+    throw new HttpError(
+      429,
+      "Die Online-Buchung ist im Moment leider nicht möglich. Bitte versuchen Sie es später erneut oder kontaktieren Sie mich per E-Mail.",
+      "booking_limit",
+    );
+  }
   if (!slot || slot.service_id !== serviceId || slot.status !== "available" || slot.start_at < now + settings.min_notice_hours * HOUR) {
     throw new HttpError(409, "Dieser Termin ist leider nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin.", "slot_taken");
   }
@@ -122,9 +135,13 @@ export async function createBooking(request: Request, env: Env, ctx: ExecutionCo
     created_at: now,
   };
 
-  // Atomic: claim the slot only if still available, insert the booking only if the claim succeeded.
+  // Atomic: claim the slot only if still available (and the daily limit still holds for requests
+  // arriving at the same moment), insert the booking only if the claim succeeded.
   const results = await env.DB.batch([
-    env.DB.prepare("UPDATE slots SET status = 'booked', booking_id = ? WHERE id = ? AND status = 'available'").bind(booking.id, slotId),
+    env.DB.prepare(
+      `UPDATE slots SET status = 'booked', booking_id = ? WHERE id = ? AND status = 'available'
+       AND (SELECT COUNT(*) FROM bookings WHERE created_at > ?) < ?`,
+    ).bind(booking.id, slotId, now - DAY, settings.max_bookings_per_day),
     env.DB.prepare(
       `INSERT INTO bookings (id, slot_id, service_id, session_kind, start_at, end_at, name, email, phone, notes, status, cancel_token_hash, consent_at, created_at)
        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?

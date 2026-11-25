@@ -1,4 +1,4 @@
-import { clearSessionCookie, createSessionCookie, isAuthenticated, verifyPassword } from "../auth";
+import { clearSessionCookie, createSessionCookie, isAuthenticated, requireSameOrigin, revokeSessions, verifyPassword } from "../auth";
 import {
   cancelBooking,
   createSlot,
@@ -43,8 +43,7 @@ import { optionalString, requireString, validateEmail, validateId, validateInt }
 // ---------------------------------------------------------------------------
 
 export async function login(request: Request, env: Env): Promise<Response> {
-  const origin = request.headers.get("origin");
-  if (!origin || origin !== new URL(request.url).origin) throw new HttpError(403, "Ungültige Herkunft der Anfrage.", "bad_origin");
+  requireSameOrigin(request);
   await enforceRateLimit(env.LOGIN_LIMITER, `login:${clientIp(request)}`);
   const { password } = await readJson<{ password?: unknown }>(request);
   if (typeof password !== "string" || password.length > 200 || !(await verifyPassword(password, env.ADMIN_PASSWORD_HASH))) {
@@ -53,7 +52,11 @@ export async function login(request: Request, env: Env): Promise<Response> {
   return json({ ok: true }, 200, { "set-cookie": await createSessionCookie(env) });
 }
 
-export function logout(): Response {
+/** Ends the session on the server too, so a copy of the cookie stops working. */
+export async function logout(request: Request, env: Env): Promise<Response> {
+  requireSameOrigin(request);
+  // Only someone who is logged in can end sessions; strangers just get the cookie cleared.
+  if (await isAuthenticated(request, env)) await revokeSessions(env);
   return json({ ok: true }, 200, { "set-cookie": clearSessionCookie() });
 }
 
@@ -382,6 +385,7 @@ export async function getAdminSettings(env: Env): Promise<Response> {
     minNoticeHours: s.min_notice_hours,
     bookingHorizonDays: s.booking_horizon_days,
     retentionDays: s.retention_days,
+    maxBookingsPerDay: s.max_bookings_per_day,
     calendarFeedUrl: feedUrl(env, s.calendar_feed_token),
   });
 }
@@ -391,6 +395,7 @@ const SETTINGS_BODY_KEYS: Record<string, (typeof NUMERIC_SETTING_KEYS)[number]> 
   minNoticeHours: "min_notice_hours",
   bookingHorizonDays: "booking_horizon_days",
   retentionDays: "retention_days",
+  maxBookingsPerDay: "max_bookings_per_day",
 };
 
 export async function updateSettings(request: Request, env: Env): Promise<Response> {

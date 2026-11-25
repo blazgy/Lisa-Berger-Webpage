@@ -203,6 +203,11 @@
                                     <label for="set-retention" class="input-label">Daten löschen … Tage nach Termin</label>
                                     <input type="number" id="set-retention" min="7" max="3650" required class="form-input-date">
                                 </div>
+                                <div>
+                                    <label for="set-daily-max" class="input-label">Höchstens … Online-Buchungen in 24 Std.</label>
+                                    <input type="number" id="set-daily-max" min="1" max="500" required class="form-input-date">
+                                    <p class="form-hint-admin">Schutz vor Missbrauch: Danach ist die Online-Buchung vorübergehend gesperrt.</p>
+                                </div>
                             </div>
                             <button type="submit" class="btn-secondary">Regeln speichern</button>
                         </form>
@@ -363,7 +368,7 @@
     </div>
 
     <script src="icons.js?v=1" defer></script>
-    <script src="admin.js?v=4" defer></script>
+    <script src="admin.js?v=5" defer></script>
 </body>
 
 </html>

@@ -315,6 +315,7 @@
     $("set-notice").value = s.minNoticeHours;
     $("set-horizon").value = s.bookingHorizonDays;
     $("set-retention").value = s.retentionDays;
+    $("set-daily-max").value = s.maxBookingsPerDay;
     $("feed-url").value = s.calendarFeedUrl || "";
   }
 
@@ -326,6 +327,7 @@
         minNoticeHours: Number($("set-notice").value),
         bookingHorizonDays: Number($("set-horizon").value),
         retentionDays: Number($("set-retention").value),
+        maxBookingsPerDay: Number($("set-daily-max").value),
       });
       await loadSettings();
     }, "Regeln gespeichert");

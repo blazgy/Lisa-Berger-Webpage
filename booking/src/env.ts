@@ -66,5 +66,6 @@ export interface Settings {
   min_notice_hours: number;
   booking_horizon_days: number;
   retention_days: number;
+  max_bookings_per_day: number;
   calendar_feed_token: string | null;
 }

@@ -25,6 +25,9 @@ booking/
 - Private iCal subscription feed for the practice calendar + per-booking `.ics` download
 - Spam protection without third parties (honeypot field + signed form timestamp, see `src/spam.ts`),
   per-IP rate limits, escaped e-mail content, CSP/noindex headers
+- Overall limit on online bookings per 24 hours (default 20, editable in the dashboard). It keeps one
+  sender from filling the calendar or making the mailbox send unlimited e-mails; when it is reached,
+  the form asks people to get in touch by e-mail
 - Automatic deletion of booking data N days after the appointment (default 90)
 
 ## Local development
@@ -64,6 +67,15 @@ npm run db:migrate:staging
 npm run deploy:staging
 npx wrangler secret put ADMIN_PASSWORD_HASH --env staging   # to change the staging password
 ```
+
+## Admin sessions
+
+A login lasts 12 hours. It ends earlier when:
+
+- **Abmelden is clicked.** This ends every open session, also on other devices.
+- **The password changes** (`ADMIN_PASSWORD_HASH`). All sessions issued with the old password stop working.
+- **`SESSION_SECRET` changes.** Do this if the secret itself may have leaked. Booking forms that are
+  open at that moment fetch a new form timestamp on their own.
 
 ## Going live – checklist
 

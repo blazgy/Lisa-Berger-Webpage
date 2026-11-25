@@ -81,7 +81,7 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, path:
 
   // ---- Admin session ----
   if (method === "POST" && path === "/api/admin/login") return admin.login(request, env);
-  if (method === "POST" && path === "/api/admin/logout") return admin.logout();
+  if (method === "POST" && path === "/api/admin/logout") return admin.logout(request, env);
   if (method === "GET" && path === "/api/admin/session") return admin.session(request, env);
 
   // ---- Admin (authenticated) ----

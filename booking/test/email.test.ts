@@ -158,6 +158,28 @@ describe("e-mail design", () => {
     expect(followUp.text).not.toContain("kennenzulernen");
     expect(followUp.html).toContain("termin.html#t=TOKEN");
   });
+
+  it("keeps the private manage link out of the calendar file", async () => {
+    const cfg = await getEmailSettings(env);
+    const service = { id: "psychotherapie", name: "Psychotherapie", duration_min: 50, price_eur: 90, description: "", icon: "", sort_order: 0, active: 1 };
+    const start = Date.now() + 7 * 86_400_000;
+    const booking = {
+      id: "b1", slot_id: "s1", service_id: "psychotherapie", session_kind: "erstgespraech" as const, start_at: start, end_at: start + 3_000_000,
+      name: "Eva Beispiel", email: "eva@example.at", phone: null, notes: null, status: "confirmed" as const,
+      cancelled_by: null, cancelled_at: null, cancel_token_hash: "", consent_at: 0, created_at: 0,
+    };
+    const token = "TOKEN123abcdefghijklmnop";
+    // Calendar entries get synced and shared, so the link that allows cancelling must not be in them.
+    for (const deadline of [start - 48 * HOUR, Date.now() - HOUR]) {
+      const mail = clientConfirmationEmail(env, cfg, booking, service, token, deadline);
+      expect(mail.html).toContain(`termin.html#t=${token}`);
+      const raw = atob(mail.attachments![0].content);
+      const ics = new TextDecoder().decode(Uint8Array.from(raw, (ch) => ch.charCodeAt(0))).replace(/\r\n /g, "");
+      expect(ics).toContain("BEGIN:VEVENT");
+      expect(ics).not.toContain("#t=");
+      expect(ics).not.toContain(token);
+    }
+  });
 });
 
 describe("appointment reminders", () => {

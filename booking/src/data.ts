@@ -6,6 +6,8 @@ const NUMERIC_SETTINGS = {
   min_notice_hours: { min: 0, max: 336, fallback: 24 },
   booking_horizon_days: { min: 7, max: 365, fallback: 90 },
   retention_days: { min: 7, max: 3650, fallback: 90 },
+  // Upper bound for online bookings in any 24 hours; protects slots and the mailbox from abuse.
+  max_bookings_per_day: { min: 1, max: 500, fallback: 20 },
 } as const;
 export type NumericSettingKey = keyof typeof NUMERIC_SETTINGS;
 export const NUMERIC_SETTING_KEYS = Object.keys(NUMERIC_SETTINGS) as NumericSettingKey[];

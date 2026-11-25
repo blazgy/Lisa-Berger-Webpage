@@ -403,7 +403,10 @@ export function clientConfirmationEmail(
       start: b.start_at,
       end: b.end_at,
       summary: `${service.name} – Lisa Berger`,
-      description: canStillCancel ? `Online absagen bis ${formatViennaLong(cancelDeadline)}: ${link}` : `Termin ansehen: ${link}`,
+      // No manage link here: calendar entries get synced and shared, and the link allows cancelling.
+      description: canStillCancel
+        ? `Online absagen bis ${formatViennaLong(cancelDeadline)} über den Link in der Bestätigungs-E-Mail.`
+        : "Details zum Termin finden Sie in der Bestätigungs-E-Mail.",
       location: PRACTICE_ADDRESS,
     },
   ]);

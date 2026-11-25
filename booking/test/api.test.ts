@@ -1,6 +1,7 @@
 import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
 import { exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { hashPassword, isAuthenticated } from "../src/auth";
 import { cleanup } from "../src/index";
 import { createFormToken, MAX_FORM_AGE_MS } from "../src/spam";
 import { addDays, viennaDate, viennaTime } from "../src/time";
@@ -90,6 +91,7 @@ afterEach(async () => {
     env.DB.prepare("DELETE FROM template_items"),
     env.DB.prepare("UPDATE settings SET value = '48' WHERE key = 'cancel_window_hours'"),
     env.DB.prepare("DELETE FROM settings WHERE key LIKE 'email_%'"),
+    env.DB.prepare("DELETE FROM settings WHERE key = 'max_bookings_per_day'"),
   ]);
 });
 
@@ -373,5 +375,82 @@ describe("static site", () => {
     expect(res.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
     expect(res.headers.get("x-robots-tag")).toContain("noindex");
     expect(await res.text()).toContain("LOKALE ENTWICKLUNG");
+  });
+});
+
+// Regression tests for the leads of the security audit (November 2026).
+describe("security audit: admin session lifetime", () => {
+  it("ends the session on logout", async () => {
+    const cookie = await login();
+    expect((await call("/api/admin/bookings", { cookie })).status).toBe(200);
+    expect((await call("/api/admin/logout", { cookie, body: {} })).status).toBe(200);
+    // A copy of the old cookie must no longer work.
+    expect((await call("/api/admin/bookings", { cookie })).status).toBe(401);
+    // A fresh login works again.
+    expect((await call("/api/admin/bookings", { cookie: await login() })).status).toBe(200);
+  });
+
+  it("does not let other sites or strangers end the session", async () => {
+    const cookie = await login();
+    expect((await call("/api/admin/logout", { cookie, body: {}, origin: "https://evil.test" })).status).toBe(403);
+    expect((await call("/api/admin/logout", { body: {} })).status).toBe(200); // no cookie: nothing to revoke
+    expect((await call("/api/admin/bookings", { cookie })).status).toBe(200);
+  });
+
+  it("ends all sessions when the password changes", async () => {
+    const cookie = await login();
+    const request = new Request(`${BASE}/api/admin/bookings`, { headers: { cookie } });
+    expect(await isAuthenticated(request, env)).toBe(true);
+    const changed = { ...env, ADMIN_PASSWORD_HASH: await hashPassword("different-dummy-password-456", 1000) };
+    expect(await isAuthenticated(request, changed)).toBe(false);
+  });
+
+  it("does not accept a public form token as a session cookie", async () => {
+    const token = await createFormToken(env);
+    expect((await call("/api/admin/bookings", { cookie: `__Host-lb_admin=${token}` })).status).toBe(401);
+    expect((await call("/api/admin/bookings", { cookie: `__Host-lb_admin=booking-form:${token}` })).status).toBe(401);
+  });
+});
+
+describe("security audit: booking volume", () => {
+  /** Simulates bookings that were made earlier through the form. */
+  async function insertPastBookings(count: number, createdAt: number, status = "confirmed") {
+    const start = Date.now() + 30 * 86_400_000;
+    await env.DB.batch(
+      Array.from({ length: count }, (_, i) =>
+        env.DB.prepare(
+          `INSERT INTO bookings (id, slot_id, service_id, session_kind, start_at, end_at, name, email, status, cancel_token_hash, consent_at, created_at)
+           VALUES (?, ?, 'psychotherapie', 'folgetermin', ?, ?, 'Fake Person', ?, ?, ?, ?, ?)`,
+        ).bind(`fake-${createdAt}-${i}`, `fake-slot-${createdAt}-${i}`, start + i * 3_600_000, start + i * 3_600_000 + 3_000_000, `fake${i}@example.test`, status, `fake-hash-${createdAt}-${i}`, createdAt, createdAt),
+      ),
+    );
+  }
+
+  it("stops accepting online bookings once the daily limit is reached", async () => {
+    const cookie = await login();
+    const slotId = await createSlot(cookie, futureDate(5), "10:00");
+    // 20 bookings in the last 24 hours, cancelled ones included (book-cancel-rebook loops count too).
+    await insertPastBookings(10, Date.now() - 3_600_000);
+    await insertPastBookings(10, Date.now() - 7_200_000, "cancelled");
+    const res = await book(slotId);
+    expect(res.status).toBe(429);
+    expect(((await res.json()) as { code: string }).code).toBe("booking_limit");
+    // The slot stays free and no e-mail was sent.
+    const slots = (await (await call("/api/slots?service=psychotherapie")).json()) as unknown[];
+    expect(slots).toHaveLength(1);
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM email_log").first<{ n: number }>())!.n).toBe(0);
+  });
+
+  it("only counts the last 24 hours and follows the dashboard setting", async () => {
+    const cookie = await login();
+    const first = await createSlot(cookie, futureDate(5), "10:00");
+    const second = await createSlot(cookie, futureDate(6), "10:00");
+    await insertPastBookings(25, Date.now() - 25 * 3_600_000); // older than a day: not counted
+    expect((await book(first)).status).toBe(201);
+
+    const res = await call("/api/admin/settings", { method: "PUT", cookie, body: { maxBookingsPerDay: 1 } });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { maxBookingsPerDay: number }).maxBookingsPerDay).toBe(1);
+    expect((await book(second, { email: "other@example.at" })).status).toBe(429);
   });
 });
