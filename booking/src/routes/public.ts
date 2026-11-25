@@ -12,7 +12,7 @@ import { cancelBooking, getBookingByTokenHash, getService, getSettings, listServ
 import { clientIp, enforceRateLimit, HttpError, json, newId, randomToken, readJson, sha256Hex } from "../http";
 import { buildCalendar, PRACTICE_ADDRESS } from "../ics";
 import { viennaDate, viennaTime } from "../time";
-import { verifyTurnstile } from "../turnstile";
+import { checkBookingSpam, createFormToken } from "../spam";
 import { optionalString, validateEmail, validateId, validateName, validatePhone } from "../validate";
 
 const HOUR = 3_600_000;
@@ -31,10 +31,15 @@ function publicService(s: Service) {
 export async function getConfig(env: Env): Promise<Response> {
   const settings = await getSettings(env);
   return json({
-    turnstileSiteKey: env.TURNSTILE_SITE_KEY,
     environment: env.ENVIRONMENT,
     cancelWindowHours: settings.cancel_window_hours,
   });
+}
+
+/** Signed timestamp for the contact form (spam protection, see spam.ts). */
+export async function getFormToken(request: Request, env: Env): Promise<Response> {
+  await enforceRateLimit(env.READ_LIMITER, `read:${clientIp(request)}`);
+  return json({ formToken: await createFormToken(env) });
 }
 
 export async function getServices(request: Request, env: Env): Promise<Response> {
@@ -70,7 +75,7 @@ export async function createBooking(request: Request, env: Env, ctx: ExecutionCo
   await enforceRateLimit(env.BOOKING_LIMITER, `book:${ip}`);
   const body = await readJson(request);
 
-  // Validate everything before touching Turnstile or the database.
+  // Validate everything before touching the database.
   const slotId = validateId(body.slotId, "Termin-Auswahl");
   const serviceId = validateId(body.serviceId, "Therapieform");
   const sessionKind = body.sessionKind;
@@ -84,7 +89,7 @@ export async function createBooking(request: Request, env: Env, ctx: ExecutionCo
   if (body.consent !== true) {
     throw new HttpError(400, "Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.", "consent_missing");
   }
-  await verifyTurnstile(env, body.turnstileToken, ip);
+  await checkBookingSpam(env, body);
 
   const [service, settings, slot] = await Promise.all([
     getService(env, serviceId),

@@ -23,7 +23,8 @@ booking/
 - Practice notification e-mails, admin cancellation (optionally re-releasing the slot)
 - Weekly template applied to 1–12 weeks, overlap protection, atomic double-booking protection
 - Private iCal subscription feed for the practice calendar + per-booking `.ics` download
-- Cloudflare Turnstile, per-IP rate limits, escaped e-mail content, CSP/noindex headers
+- Spam protection without third parties (honeypot field + signed form timestamp, see `src/spam.ts`),
+  per-IP rate limits, escaped e-mail content, CSP/noindex headers
 - Automatic deletion of booking data N days after the appointment (default 90)
 
 ## Local development
@@ -32,8 +33,7 @@ booking/
 cd booking
 npm install
 npm run hash-password            # → put the output into .dev.vars as ADMIN_PASSWORD_HASH='…'
-# .dev.vars also needs SESSION_SECRET='<32+ random chars>' and
-# TURNSTILE_SECRET='1x0000000000000000000000000000000AA' (Cloudflare test key)
+# .dev.vars also needs SESSION_SECRET='<32+ random chars>'
 npm run db:migrate:local
 npm run dev                      # http://localhost:8787 (admin: /admin.html)
 npm test
@@ -69,8 +69,7 @@ npx wrangler secret put ADMIN_PASSWORD_HASH --env staging   # to change the stag
 
 1. Decide where production runs (Lisa's own Cloudflare account is recommended for GDPR – she is the controller).
 2. Create the production D1 with `--jurisdiction eu`, add an `env.production` block (copy of staging with `ENVIRONMENT: "production"`, `EMAIL_MODE: "smtp"`).
-3. Create a real Turnstile widget for the production hostname; set `TURNSTILE_SITE_KEY` (var) and `TURNSTILE_SECRET` (secret).
-4. Secrets: `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `SMTP_USER`, `SMTP_PASSWORD` (netcup mailbox `termine@`).
-5. Hosting: either move the domain's DNS to Cloudflare and serve the whole site from the Worker, or keep netcup
+3. Secrets: `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `SMTP_USER`, `SMTP_PASSWORD` (netcup mailbox `termine@`).
+4. Hosting: either move the domain's DNS to Cloudflare and serve the whole site from the Worker, or keep netcup
    for the site, run the API on a subdomain and set `ALLOWED_ORIGINS` + `data-api` on the `booking.js` script tag.
-6. Review/approve the Datenschutzerklärung text, sign the DPAs (Cloudflare, netcup).
+5. Review/approve the Datenschutzerklärung text, sign the DPAs (Cloudflare, netcup).

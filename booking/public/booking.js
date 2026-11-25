@@ -21,8 +21,7 @@
     slot: null,
     month: null, // { y, m } (m: 0-11)
     highlightSlotId: null, // slot marked by "Nächster freier Termin"
-    turnstileWidget: null,
-    turnstileToken: null,
+    formToken: null,
     submitting: false,
   };
 
@@ -155,7 +154,8 @@
     els.phone = h("input", { type: "tel", id: "bk-phone", name: "phone", maxlength: "40", autocomplete: "tel", class: "form-input", placeholder: "+43 …" });
     els.notes = h("textarea", { id: "bk-notes", name: "notes", rows: "3", maxlength: "1000", class: "form-input no-resize" });
     els.consent = h("input", { type: "checkbox", id: "bk-consent", required: true, class: "form-checkbox", style: "margin-top: 0.3rem; flex-shrink: 0;" });
-    els.turnstile = h("div", { class: "booking-turnstile" });
+    // Honeypot: hidden from people (and screen readers), filled in by simple bots.
+    els.website = h("input", { type: "text", id: "bk-website", name: "website", tabindex: "-1", autocomplete: "off" });
     els.formError = h("div", { class: "booking-error hidden", role: "alert" });
     els.submit = h("button", { type: "submit", class: "button-primary booking-submit u-weight-medium mt-2 w-full", style: "padding: 0.8rem; border-radius: 9999px;" }, "Termin verbindlich buchen");
     const kind = (value, title, hint, checked) =>
@@ -180,7 +180,8 @@
           "Ich willige ein, dass meine Angaben zur Terminvereinbarung verarbeitet und gespeichert werden. Details in der ",
           h("a", { href: "#datenschutz-content", class: "text-dark-text u-weight-medium underline", onclick: openPrivacy }, "Datenschutzerklärung"),
           ". ", h("span", { class: "text-red-500" }, "*"))),
-      els.turnstile,
+      h("div", { class: "booking-hp", "aria-hidden": "true" },
+        h("label", { for: "bk-website" }, "Bitte dieses Feld leer lassen"), els.website),
       els.formError,
       els.submit,
     );
@@ -235,7 +236,7 @@
 
   function showStep(n) {
     for (const [k, el] of Object.entries(steps)) el.classList.toggle("active", Number(k) === n);
-    if (n === 3) ensureTurnstile();
+    if (n === 3) ensureFormToken();
     refreshIcons();
     dialog.querySelector(".booking-dialog-content").scrollTop = 0;
   }
@@ -275,8 +276,7 @@
     showError(els.formError, "");
     showError(els.step2Error, "");
     els.submit.disabled = false;
-    if (window.turnstile && state.turnstileWidget !== null) window.turnstile.reset(state.turnstileWidget);
-    state.turnstileToken = null;
+    state.formToken = null;
     showStep(1);
   }
 
@@ -456,36 +456,15 @@
     els.name.focus();
   }
 
-  // ------------------------------------------------------------------ Turnstile
+  // ------------------------------------------------------------------ spam protection
 
-  function loadTurnstileScript() {
-    if (window.turnstile) return Promise.resolve();
-    if (loadTurnstileScript.promise) return loadTurnstileScript.promise;
-    loadTurnstileScript.promise = new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error("Turnstile konnte nicht geladen werden."));
-      document.head.append(s);
-    });
-    return loadTurnstileScript.promise;
-  }
-
-  async function ensureTurnstile() {
-    if (state.turnstileWidget !== null) return;
+  /** Signed timestamp from the server; bookings sent too quickly after it are rejected. */
+  async function ensureFormToken() {
+    if (state.formToken) return;
     try {
-      await loadTurnstileScript();
-      state.turnstileWidget = window.turnstile.render(els.turnstile, {
-        sitekey: state.config.turnstileSiteKey,
-        language: "de",
-        appearance: "interaction-only",
-        callback: (token) => (state.turnstileToken = token),
-        "expired-callback": () => (state.turnstileToken = null),
-        "error-callback": () => (state.turnstileToken = null),
-      });
+      state.formToken = (await api("/api/form-token")).formToken;
     } catch (err) {
-      showError(els.formError, "Die Sicherheitsprüfung konnte nicht geladen werden. Bitte deaktivieren Sie ggf. Werbeblocker oder kontaktieren Sie mich direkt.");
+      state.formToken = null;
     }
   }
 
@@ -504,8 +483,11 @@
       if (invalid) invalid.focus();
       return;
     }
-    if (!state.turnstileToken) {
-      showError(els.formError, "Bitte warten Sie einen Moment, bis die Sicherheitsprüfung abgeschlossen ist, und versuchen Sie es erneut.");
+    if (!state.formToken) {
+      await ensureFormToken();
+      showError(els.formError, state.formToken
+        ? "Bitte prüfen Sie Ihre Angaben und senden Sie das Formular dann erneut."
+        : "Die Online-Buchung ist gerade nicht erreichbar. Bitte kontaktieren Sie mich per E-Mail oder Telefon.");
       return;
     }
     state.submitting = true;
@@ -523,7 +505,8 @@
           phone: els.phone.value,
           notes: els.notes.value,
           consent: els.consent.checked,
-          turnstileToken: state.turnstileToken,
+          website: els.website.value,
+          formToken: state.formToken,
         }),
       });
       els.success.replaceChildren(
@@ -542,8 +525,10 @@
         showStep(2);
         showError(els.step2Error, err.message);
       }
-      if (window.turnstile && state.turnstileWidget !== null) window.turnstile.reset(state.turnstileWidget);
-      state.turnstileToken = null;
+      if (err.code === "form_expired") {
+        state.formToken = null;
+        await ensureFormToken();
+      }
     } finally {
       state.submitting = false;
       els.submit.disabled = false;

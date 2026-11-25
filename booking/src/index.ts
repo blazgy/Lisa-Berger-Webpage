@@ -13,12 +13,12 @@ const CLEANUP_CRON = "15 3 * * *";
 // Content-Security-Policy for all HTML pages served by the Worker.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self' https://cloudflareinsights.com",
-  "frame-src https://challenges.cloudflare.com",
+  "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -71,6 +71,7 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, path:
 
   // ---- Public ----
   if (method === "GET" && path === "/api/config") return pub.getConfig(env);
+  if (method === "GET" && path === "/api/form-token") return pub.getFormToken(request, env);
   if (method === "GET" && path === "/api/services") return pub.getServices(request, env);
   if (method === "GET" && path === "/api/slots") return pub.getSlots(request, env);
   if (method === "POST" && path === "/api/bookings") return pub.createBooking(request, env, ctx);

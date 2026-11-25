@@ -1,7 +1,8 @@
 import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
 import { exports } from "cloudflare:workers";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup } from "../src/index";
+import { createFormToken, MAX_FORM_AGE_MS } from "../src/spam";
 import { addDays, viennaDate, viennaTime } from "../src/time";
 
 const BASE = "https://booking.test";
@@ -47,7 +48,7 @@ async function createSlot(cookie: string, date: string, time: string, serviceId 
   return ((await res.json()) as { id: string }).id;
 }
 
-function bookingBody(slotId: string, overrides: Record<string, unknown> = {}) {
+async function bookingBody(slotId: string, overrides: Record<string, unknown> = {}) {
   return {
     slotId,
     serviceId: "psychotherapie",
@@ -57,14 +58,16 @@ function bookingBody(slotId: string, overrides: Record<string, unknown> = {}) {
     phone: "+43 660 1234567",
     notes: "Bitte <b>nicht</b> anrufen",
     consent: true,
-    turnstileToken: "test-token",
+    website: "",
+    // Issued 10 s ago: like a person who took a moment to fill in the form.
+    formToken: await createFormToken(env, Date.now() - 10_000),
     ...overrides,
   };
 }
 
 /** Book through the public API and wait for the e-mails to be written. */
 async function book(slotId: string, overrides: Record<string, unknown> = {}): Promise<Response> {
-  const res = await call("/api/bookings", { body: bookingBody(slotId, overrides) });
+  const res = await call("/api/bookings", { body: await bookingBody(slotId, overrides) });
   // E-mails are sent via waitUntil; give them a moment.
   await new Promise((r) => setTimeout(r, 50));
   return res;
@@ -78,18 +81,6 @@ async function latestManageToken(): Promise<string> {
   return match![1];
 }
 
-let turnstileSuccess = true;
-beforeEach(() => {
-  turnstileSuccess = true;
-  const realFetch = globalThis.fetch;
-  vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
-    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    if (url.startsWith("https://challenges.cloudflare.com/")) {
-      return Response.json({ success: turnstileSuccess });
-    }
-    return realFetch(input, init);
-  });
-});
 afterEach(async () => {
   vi.restoreAllMocks();
   await env.DB.batch([
@@ -196,12 +187,28 @@ describe("public booking flow", () => {
     expect((await book(slotId, { notes: "x".repeat(1001) })).status).toBe(400);
   });
 
-  it("rejects a failed Turnstile check", async () => {
+  it("rejects bots: filled honeypot, too fast, missing, forged or stale form token", async () => {
     const cookie = await login();
     const slotId = await createSlot(cookie, futureDate(7), "13:00");
-    turnstileSuccess = false;
-    expect((await book(slotId)).status).toBe(403);
-    expect((await book(slotId, { turnstileToken: "" })).status).toBe(400);
+    const code = async (overrides: Record<string, unknown>) => {
+      const res = await book(slotId, overrides);
+      expect(res.status).toBe(400);
+      return ((await res.json()) as { code: string }).code;
+    };
+    expect(await code({ website: "https://spam.example" })).toBe("spam_rejected");
+    expect(await code({ formToken: await createFormToken(env, Date.now() - 500) })).toBe("too_fast");
+    expect(await code({ formToken: undefined })).toBe("form_expired");
+    const [payload] = (await createFormToken(env)).split(".");
+    expect(await code({ formToken: `${payload}.forged` })).toBe("form_expired");
+    expect(await code({ formToken: await createFormToken(env, Date.now() - MAX_FORM_AGE_MS - 1000) })).toBe("form_expired");
+    // The slot is still free afterwards, and a normal booking goes through.
+    expect((await book(slotId)).status).toBe(201);
+  });
+
+  it("issues form tokens through the public API", async () => {
+    const res = await call("/api/form-token");
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { formToken: string }).formToken).toMatch(/^[\w-]+\.[\w-]+$/);
   });
 
   it("does not offer slots inside the minimum notice period", async () => {

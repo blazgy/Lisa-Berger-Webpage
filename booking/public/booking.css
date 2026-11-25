@@ -434,8 +434,13 @@
     font-size: 0.9rem;
 }
 
-.booking-turnstile {
-    min-height: 65px;
+/* Honeypot field: off-screen, never shown to people */
+.booking-hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 
 .booking-submit[disabled] {

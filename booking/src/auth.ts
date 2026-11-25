@@ -40,7 +40,7 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
-async function hmacKey(secret: string): Promise<CryptoKey> {
+export async function hmacKey(secret: string): Promise<CryptoKey> {
   if (!secret || secret.length < 32) throw new Error("SESSION_SECRET missing or too short");
   return crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [
     "sign",

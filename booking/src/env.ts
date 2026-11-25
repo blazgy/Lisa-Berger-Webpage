@@ -12,13 +12,11 @@ export interface Env {
   MAIL_FROM: string;
   SMTP_HOST: string;
   SMTP_PORT: string;
-  TURNSTILE_SITE_KEY: string;
   ALLOWED_ORIGINS: string;
 
   // Secrets (wrangler secret put / .dev.vars)
   ADMIN_PASSWORD_HASH: string;
   SESSION_SECRET: string;
-  TURNSTILE_SECRET: string;
   SMTP_USER?: string;
   SMTP_PASSWORD?: string;
 }

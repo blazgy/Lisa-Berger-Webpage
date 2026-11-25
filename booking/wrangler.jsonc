@@ -46,8 +46,6 @@
     "MAIL_FROM": "termine@psychotherapieberger.at",
     "SMTP_HOST": "mx152d.netcup.net",
     "SMTP_PORT": "465",
-    // Cloudflare's documented always-pass Turnstile test key.
-    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
     // Extra origins allowed to call the public API (comma-separated), e.g. the netcup-hosted site.
     "ALLOWED_ORIGINS": ""
   },
@@ -79,7 +77,6 @@
         "MAIL_FROM": "termine@psychotherapieberger.at",
         "SMTP_HOST": "mx152d.netcup.net",
         "SMTP_PORT": "465",
-        "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
         "ALLOWED_ORIGINS": ""
       }
     }

@@ -22,7 +22,6 @@ export default defineConfig({
           TEST_MIGRATIONS: await readD1Migrations(path.join(import.meta.dirname, "migrations")),
           ADMIN_PASSWORD_HASH: await hashForTests(TEST_ADMIN_PASSWORD),
           SESSION_SECRET: "test-session-secret-0123456789abcdef0123456789",
-          TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
           PUBLIC_BASE_URL: "https://booking.test",
         },
       },

@@ -171,7 +171,7 @@
     <link rel="preload" href="fonts/lora-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/epilogue-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles.css?v=1.5">
-    <link rel="stylesheet" href="booking.css?v=3">
+    <link rel="stylesheet" href="booking.css?v=4">
 </head>
 
 <body class="bg-off-white text-dark-text">
@@ -623,14 +623,12 @@
                                         den E-Mail-Server meines Hosting-Anbieters netcup GmbH (Karlsruhe, Deutschland)
                                         versendet. Mit beiden Anbietern besteht ein Vertrag zur Auftragsverarbeitung (Art. 28
                                         DSGVO).</p>
-                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Schutz vor Missbrauch
-                                            (Cloudflare Turnstile)</strong><br>
-                                        Um das Buchungsformular vor automatisierten Anfragen zu schützen, wird beim Öffnen des
-                                        Formulars der Dienst Cloudflare Turnstile geladen. Dabei werden technische Daten Ihres
-                                        Browsers und Ihre IP-Adresse an Cloudflare übermittelt, um zu prüfen, ob die Anfrage
-                                        von einem Menschen stammt. Es werden keine Cookies zu Werbezwecken gesetzt. Grundlage ist
-                                        mein berechtigtes Interesse an einem sicheren Buchungssystem (Art. 6 Abs. 1 lit. f
-                                        DSGVO).</p>
+                                    <p class="mb-4"><strong class="u-weight-bold text-dark-text">Schutz vor Missbrauch</strong><br>
+                                        Um das Buchungsformular vor automatisierten Anfragen zu schützen, wird die Zahl der
+                                        Buchungsanfragen pro IP-Adresse kurzzeitig begrenzt; die IP-Adresse wird dafür nicht
+                                        dauerhaft gespeichert. Es werden keine Dienste Dritter eingebunden und keine Informationen
+                                        auf Ihrem Gerät gespeichert oder ausgelesen. Grundlage ist mein berechtigtes Interesse an
+                                        einem sicheren Buchungssystem (Art. 6 Abs. 1 lit. f DSGVO).</p>
                                     <p class="mb-4"><strong class="u-weight-bold text-dark-text">Website-Statistik</strong><br>
                                         Diese Website verwendet Cloudflare Web Analytics, eine cookielose Reichweitenmessung,
                                         die keine personenbezogenen Profile erstellt (Art. 6 Abs. 1 lit. f DSGVO).</p>
@@ -835,7 +833,7 @@
     </script>
     <!-- Icons (self-hosted Lucide subset) and online booking (Cloudflare Worker API, same origin) -->
     <script src="icons.js?v=1" defer></script>
-    <script src="booking.js?v=3" defer></script>
+    <script src="booking.js?v=4" defer></script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "175595f3d9af44c1b7a6c2ea6a5c6384"}'></script>
     <!-- End Cloudflare Web Analytics -->
