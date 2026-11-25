@@ -13,9 +13,9 @@ const CLEANUP_CRON = "15 3 * * *";
 // Content-Security-Policy for all HTML pages served by the Worker.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://unpkg.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self' https://cloudflareinsights.com",
   "frame-src https://challenges.cloudflare.com",

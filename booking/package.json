@@ -20,6 +20,7 @@
     "@cloudflare/workers-types": "^5.20261110.1",
     "@vitest/runner": "^4.1.12",
     "@vitest/snapshot": "^4.1.12",
+    "lucide": "1.80.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.12",
     "wrangler": "^4.160.0"

@@ -48,6 +48,11 @@
     return h("i", { "data-lucide": name, class: cls || "" });
   }
 
+  /** Smooth scrolling unless the visitor asked the system for reduced motion. */
+  function scrollBehavior() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  }
+
   function refreshIcons() {
     if (window.lucide) window.lucide.createIcons();
   }
@@ -281,7 +286,7 @@
     const btn = document.getElementById("datenschutz-btn");
     const content = document.getElementById("datenschutz-content");
     if (content && !content.classList.contains("active") && btn) btn.click();
-    else if (content) content.scrollIntoView({ behavior: "smooth" });
+    else if (content) content.scrollIntoView({ behavior: scrollBehavior() });
   }
 
   function renderServices() {
@@ -339,7 +344,7 @@
     const btn = els.times.querySelector(".is-next");
     if (btn) {
       btn.focus({ preventScroll: true });
-      btn.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      btn.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
     }
   }
 

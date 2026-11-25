@@ -1,8 +1,9 @@
 // Copies the public website (repo root) plus the booking pages into ./.site for the Worker.
 // Only an explicit allowlist is published, so docs, configs and git data never go online.
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildIconsScript, checkIconNames } from "./icons.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const bookingDir = join(here, "..");
@@ -33,6 +34,13 @@ for (const file of readdirSync(siteRoot)) {
     cpSync(join(siteRoot, file), join(out, file));
   }
 }
+// Self-hosted web fonts
+cpSync(join(siteRoot, "fonts"), join(out, "fonts"), { recursive: true });
 // Booking front-end files (booking.js, booking.css, admin.html, termin.html, …)
 cpSync(join(bookingDir, "public"), out, { recursive: true });
+// Icon subset (replaces the Lucide CDN); fails if a page uses an icon that is not in the subset
+checkIconNames(
+  readdirSync(out).filter((f) => /\.(html|js)$/.test(f)).map((f) => readFileSync(join(out, f), "utf8")),
+);
+writeFileSync(join(out, "icons.js"), buildIconsScript());
 console.log("Site built into", out);

@@ -4,9 +4,8 @@
 
 .booking-dialog {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    margin: auto;
     width: 90%;
     max-width: 800px;
     max-height: 90vh;
@@ -53,6 +52,12 @@
 .booking-dialog-close:hover {
     background: rgba(255, 255, 255, 1);
     transform: scale(1.1);
+}
+
+.booking-dialog-close:focus-visible,
+.back-btn:focus-visible {
+    outline: 2px solid var(--swatch--dark-text);
+    outline-offset: 3px;
 }
 
 .booking-dialog-content {
@@ -109,6 +114,16 @@
 
 .back-btn:hover {
     transform: translateX(-4px);
+}
+
+.booking-dialog-content {
+    overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back-btn:hover {
+        transform: none;
+    }
 }
 
 .calendar-days-grid {
@@ -331,11 +346,11 @@
 @keyframes dialogFadeIn {
     from {
         opacity: 0;
-        transform: translate(-50%, -48%) scale(0.96);
+        transform: translateY(2%) scale(0.96);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: none;
     }
 }
 

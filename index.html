@@ -168,11 +168,10 @@
 
 
     <!-- CSS Frameworks & Custom Styles -->
-    <link rel="stylesheet" href="styles.css?v=1.4">
-    <link rel="stylesheet" href="booking.css?v=2">
-
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preload" href="fonts/lora-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/epilogue-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="styles.css?v=1.5">
+    <link rel="stylesheet" href="booking.css?v=3">
 </head>
 
 <body class="bg-off-white text-dark-text">
@@ -180,7 +179,7 @@
         <nav class="nav-island" id="main-nav">
             <!-- Logo -->
             <a href="#" class="nav-logo u-flex" data-align="center">
-                <img src="berger-logo.svg" alt="Lisa Berger" style="height: 40px; width: auto;">
+                <img src="berger-logo.svg" alt="Lisa Berger" width="148" height="48" style="height: 40px; width: auto;">
             </a>
 
             <!-- Desktop Links -->
@@ -200,20 +199,12 @@
             <section id="willkommen" class="section_hero relative overflow-hidden u-flex section-fullscreen"
                 data-align="center">
                 <div class="u-container z-10">
-                    <!-- Info Banner -->
-                    <div class="info-banner animate-fade-in">
-                        <div class="info-banner-inner">
-                            <span class="info-banner-text">
-                                Zurzeit sind leider alle Therapieplätze belegt. Voraussichtlich stehen ab Jänner wieder freie Plätze zur Verfügung. Gerne können Sie sich bereits jetzt auf die Warteliste setzen lassen.
-                            </span>
-                        </div>
-                    </div>
                     <div class="u-grid hero-grid" data-large-columns="2" data-medium-columns="1" data-align="center">
 
                         <!-- Left: Text Content -->
                         <div class="hero-content animate-slide-up hero-order-2">
                             <div class="mb-4">
-                                <img src="lisa-vector.svg" alt="Praxis für Psychotherapie"
+                                <img src="lisa-vector.svg" alt="Praxis für Psychotherapie" width="1449" height="149"
                                     style="height: 1.8rem; width: auto;" class="block">
                             </div>
 
@@ -225,8 +216,7 @@
                                 Personzentrierte Psychotherapie in Vöcklabruck</h2>
 
                             <p class="u-text-style-main text-gray-600 font-light leading-relaxed max-w-lg mb-8">
-                                Psychotherapeutin in Fachausbildung unter Lehrsupervision (Humanistische
-                                Psychotherapie)
+                                Psychotherapeutin in Fachausbildung unter Lehrsupervision
                             </p>
                         </div>
 
@@ -236,7 +226,7 @@
                             <!-- Image Blob -->
                             <div class="art-card overflow-hidden group art-card-size">
                                 <img src="Lisa-Photo-1.avif" alt="Lisa Berger - Psychotherapeutin in Vöcklabruck"
-                                    class="w-full h-full object-cover block">
+                                    width="2000" height="3006" fetchpriority="high" class="w-full h-full object-cover block">
                             </div>
 
 
@@ -262,36 +252,36 @@
                         data-small-columns="1">
 
                         <!-- Service 1 -->
-                        <div class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
+                        <div data-modal="modal-1" class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
                             data-align="center" data-justify="space-between">
                             <h3
                                 class="u-text-style-h3 u-weight-medium text-dark-text m-0 tracking-tight z-10 text-center">
-                                Psychotherapie</h3>
-                            <div
+                                <button type="button" class="service-card-btn" aria-haspopup="dialog">Psychotherapie</button></h3>
+                            <div aria-hidden="true"
                                 class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all">
                                 <i data-lucide="arrow-right" class="icon-sm"></i>
                             </div>
                         </div>
 
                         <!-- Service 2 -->
-                        <div class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
+                        <div data-modal="modal-2" class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
                             data-align="center" data-justify="space-between">
                             <h3
                                 class="u-text-style-h3 u-weight-medium text-dark-text m-0 tracking-tight z-10 text-center">
-                                Paartherapie</h3>
-                            <div
+                                <button type="button" class="service-card-btn" aria-haspopup="dialog">Paartherapie</button></h3>
+                            <div aria-hidden="true"
                                 class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all">
                                 <i data-lucide="arrow-right" class="icon-sm"></i>
                             </div>
                         </div>
 
                         <!-- Service 3 -->
-                        <div class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
+                        <div data-modal="modal-3" class="service-card rounded-3xl relative glass-panel p-10 shadow-sm u-flex flex-mobile-col border-t-green transition-all hover-lift cursor-pointer group"
                             data-align="center" data-justify="space-between">
                             <h3
                                 class="u-text-style-h3 u-weight-medium text-dark-text m-0 tracking-tight z-10 text-center">
-                                Spieltherapie</h3>
-                            <div
+                                <button type="button" class="service-card-btn" aria-haspopup="dialog">Spieltherapie</button></h3>
+                            <div aria-hidden="true"
                                 class="icon-circle glass-panel group-hover-scale z-10 text-dark-text icon-circle-sm group-hover-border-green transition-all">
                                 <i data-lucide="arrow-right" class="icon-sm"></i>
                             </div>
@@ -305,14 +295,14 @@
 
                         <div
                             class="info-card radius-organic-4 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Für wen?</h4>
+                            <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Für wen?</h3>
                             <p class="u-text-style-small text-gray-600 leading-relaxed">In meiner Praxis arbeite ich mit
                                 Kindern, Jugendlichen und Erwachsenen. Für den Beginn der Therapie ist keine ärztliche
                                 Zuweisung erforderlich.</p>
                         </div>
                         <div
                             class="col-span-2-lg info-card radius-organic-1 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Kosten und Frequenz</h4>
+                            <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Kosten und Frequenz</h3>
                             <p class="u-text-style-small text-gray-600 leading-relaxed mb-4">Die Häufigkeit der
                                 Sitzungen wird individuell vereinbart. Gerade zu Beginn der Therapie hat sich eine
                                 wöchentliche Frequenz bewährt.</p>
@@ -330,7 +320,7 @@
 
                         <div
                             class="info-card radius-organic-3 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Absageregelung</h4>
+                            <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Absageregelung</h3>
                             <p class="u-text-style-small text-gray-600 leading-relaxed">Einen bereits festgelegten
                                 Termin können Sie bis zu 48 Stunden vor der geplanten Einheit kostenfrei absagen. Ich
                                 bitte um Ihr Verständnis, dass kurzfristige Absagen und versäumte Stunden in Rechnung
@@ -339,7 +329,7 @@
 
                         <div
                             class="info-card radius-organic-4 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Verschwiegenheit</h4>
+                            <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Verschwiegenheit</h3>
                             <p class="u-text-style-small text-gray-600 leading-relaxed">Als Psychotherapeutin bin ich
                                 gemäß §15 Psychotherapiegesetz zur absoluten Verschwiegenheit verpflichtet. Diese gilt
                                 etwa auch vor Behörden, Krankenkassen oder Angehörigen.</p>
@@ -347,8 +337,8 @@
 
                         <div
                             class="col-span-2-md info-card radius-organic-2 bg-white-60 rounded-3xl p-8 shadow-sm border-white-60 glass-panel">
-                            <h4 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Psychotherapeutin in
-                                Fachausbildung unter Lehrsupervision</h4>
+                            <h3 class="u-text-style-h4 u-weight-medium text-dark-text mb-4">Psychotherapeutin in
+                                Fachausbildung unter Lehrsupervision</h3>
                             <p class="u-text-style-small text-gray-600 leading-relaxed mb-4">Ich befinde mich im letzten
                                 Abschnitt meiner Ausbildung. Zur Qualitätssicherung reflektiere ich meine
                                 psychotherapeutische Arbeit mittels Supervision durch eine langjährig tätige
@@ -372,7 +362,7 @@
                             <div class="sticky sticky-top-nav">
                                 <div class="hero-visual relative u-flex perspective-container" data-justify="center">
                                     <div class="art-card overflow-hidden group art-card-size">
-                                        <img src="Lisa-Photo-2.avif"
+                                        <img src="Lisa-Photo-2.avif" width="2000" height="3006" loading="lazy" decoding="async"
                                             alt="Lisa Berger Portrait - Psychotherapie Praxis Vöcklabruck"
                                             class="w-full h-full object-cover block">
                                     </div>
@@ -511,8 +501,8 @@
 
                             <!-- Handwriting Image -->
                             <div class="p-4">
-                                <img src="Lisa Handschrift.avif" alt="Lisa Berger Handschrift"
-                                    class="w-full h-auto block" style="border-radius: 1rem;">
+                                <img src="Lisa Handschrift.avif" alt="Lisa Berger Handschrift" width="1600" height="543" loading="lazy" decoding="async"
+                                    class="w-full h-auto block" style="height: auto; border-radius: 1rem;">
                             </div>
                         </div>
 
@@ -525,29 +515,29 @@
                     style="min-height: 10vh;">
                     <p class="u-text-style-small text-gray-500 u-weight-medium m-0">
                         ©
-                        <script>document.write(new Date().getFullYear())</script> Lisa Berger.
+                        <span id="footer-year">2026</span> Lisa Berger.
                         <span class="u-weight-regular opacity-80">Alle Rechte vorbehalten.</span>
                     </p>
                     <div class="u-flex gap-lg">
-                        <button id="impressum-btn"
+                        <button type="button" id="impressum-btn" aria-expanded="false" aria-controls="impressum-content"
                             class="u-text-style-small text-gray-500 cursor-pointer hover:text-dark-text transition-all"
                             style="background: none; border: none; padding: 0;">Impressum</button>
-                        <button id="datenschutz-btn"
+                        <button type="button" id="datenschutz-btn" aria-expanded="false" aria-controls="datenschutz-content"
                             class="u-text-style-small text-gray-500 cursor-pointer hover:text-dark-text transition-all"
                             style="background: none; border: none; padding: 0;">Datenschutz</button>
                     </div>
                 </div>
 
                 <!-- Impressum Accordion Content -->
-                <div id="impressum-content" class="impressum-wrapper relative">
+                <div id="impressum-content" class="impressum-wrapper relative" role="region" aria-labelledby="impressum-title" inert>
                     <div class="impressum-inner">
-                        <button class="accordion-close cursor-pointer transition-all hover-lift"
+                        <button type="button" aria-label="Schließen" class="accordion-close cursor-pointer transition-all hover-lift"
                             style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: var(--color-dark-text); padding: 0.5rem; border-radius: 50%; z-index: 20;">
                             <i data-lucide="x" class="icon-sm"></i>
                         </button>
                         <div class="u-container u-padding-block-3 u-text-style-small text-gray-600 leading-relaxed mt-4 relative"
                             style="border-top: 1px solid rgba(255, 255, 255, 0.5); padding-top: 2rem; padding-bottom: 5rem;">
-                            <h4 class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Impressum</h4>
+                            <h2 id="impressum-title" class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Impressum</h2>
                             <div class="u-grid gap-sm-grid" data-large-columns="3" data-medium-columns="1"
                                 data-small-columns="1">
                                 <div>
@@ -580,15 +570,15 @@
                 </div>
 
                 <!-- Datenschutz Accordion Content -->
-                <div id="datenschutz-content" class="impressum-wrapper relative">
+                <div id="datenschutz-content" class="impressum-wrapper relative" role="region" aria-labelledby="datenschutz-title" inert>
                     <div class="impressum-inner">
-                        <button class="accordion-close cursor-pointer transition-all hover-lift"
+                        <button type="button" aria-label="Schließen" class="accordion-close cursor-pointer transition-all hover-lift"
                             style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: var(--color-dark-text); padding: 0.5rem; border-radius: 50%; z-index: 20;">
                             <i data-lucide="x" class="icon-sm"></i>
                         </button>
                         <div class="u-container u-padding-block-3 u-text-style-small text-gray-600 leading-relaxed mt-4 relative"
                             style="border-top: 1px solid rgba(255, 255, 255, 0.5); padding-top: 2rem; padding-bottom: 5rem;">
-                            <h4 class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Datenschutz</h4>
+                            <h2 id="datenschutz-title" class="u-weight-medium text-dark-text mb-4" style="font-size: 1.25rem;">Datenschutz</h2>
                             <div class="u-grid gap-sm-grid" data-large-columns="1" data-medium-columns="1"
                                 data-small-columns="1">
                                 <div>
@@ -662,8 +652,6 @@
     </div>
 
     <script>
-        lucide.createIcons();
-
         const navBar = document.getElementById('main-nav');
 
         // Sticky Nav background on scroll
@@ -676,17 +664,16 @@
         });
     </script>
 
-    <!-- Service Modals -->
-    <div id="service-modal-overlay" class="service-modal-overlay"></div>
+    <!-- Service Modals (native <dialog>, opened with showModal) -->
 
     <!-- Modal 1: Einzelpsychotherapie -->
-    <div id="modal-1" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl">
-        <button
+    <dialog id="modal-1" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl" closedby="any" aria-labelledby="modal-1-title">
+        <button type="button" aria-label="Schließen"
             class="modal-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
             <i data-lucide="x" class="icon-sm"></i>
         </button>
         <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Psychotherapie</h3>
+            <h2 id="modal-1-title" class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Psychotherapie</h2>
             <div class="u-text-style-main text-gray-700 u-grid gap-sm" style="text-align: left;">
                 <p>Psychotherapie ist eine wissenschaftlich fundierte Behandlungsform zur Unterstützung bei psychischen
                     Belastungen und Leidenszuständen.</p>
@@ -747,16 +734,16 @@
                     Themen.</p>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <!-- Modal 2: Paartherapie -->
-    <div id="modal-2" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl">
-        <button
+    <dialog id="modal-2" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl" closedby="any" aria-labelledby="modal-2-title">
+        <button type="button" aria-label="Schließen"
             class="modal-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
             <i data-lucide="x" class="icon-sm"></i>
         </button>
         <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Paartherapie</h3>
+            <h2 id="modal-2-title" class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Paartherapie</h2>
             <div class="u-text-style-main text-gray-700 u-grid gap-sm" style="text-align: left;">
                 <p>In der Paar- und Partner*innentherapie kann es darum gehen, einander wieder besser zuzuhören,
                     festgefahrene oder wiederkehrende Muster zu erkennen und neue Wege der Verständigung, Nähe und
@@ -769,16 +756,16 @@
                     Geschlechtsidentität, sexueller Orientierung oder gelebtem Beziehungsmodell.</p>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <!-- Modal 3: Spieltherapie -->
-    <div id="modal-3" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl">
-        <button
+    <dialog id="modal-3" class="service-modal rounded-3xl bg-white border-t-green shadow-2xl" closedby="any" aria-labelledby="modal-3-title">
+        <button type="button" aria-label="Schließen"
             class="modal-close cursor-pointer border-t-green icon-circle glass-panel group-hover-scale z-50 text-dark-text icon-circle-sm">
             <i data-lucide="x" class="icon-sm"></i>
         </button>
         <div class="modal-content u-padding-inline-4 u-padding-block-5 text-center">
-            <h3 class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Spieltherapie</h3>
+            <h2 id="modal-3-title" class="u-text-style-h2 u-weight-medium text-dark-text mb-4 tracking-tight">Spieltherapie</h2>
             <div class="u-text-style-main text-gray-700 u-grid gap-sm" style="text-align: left;">
                 <p>Das Spiel ist für Kinder eine wichtige Möglichkeit, Erlebtes zu verarbeiten und Gefühle auszudrücken.
                     In der personzentrierten Spieltherapie wird das Kind in seiner individuellen Lebenswelt wahrgenommen
@@ -789,106 +776,66 @@
                     begleitende Gespräche ist ein wichtiger Bestandteil des therapeutischen Prozesses.</p>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <script>
-        // Service Modals Logic
-        const overlay = document.getElementById('service-modal-overlay');
-        const serviceCards = document.querySelectorAll('.service-card');
-        const closeButtons = document.querySelectorAll('.modal-close');
-        const modals = document.querySelectorAll('.service-modal');
+        // Footer year
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
 
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                overlay.classList.add('active');
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeAllModals() {
-            overlay.classList.remove('active');
-            modals.forEach(m => m.classList.remove('active'));
-            document.body.style.overflow = '';
-        }
-
-        serviceCards.forEach((card, index) => {
-            card.style.cursor = 'pointer';
+        // Service dialogs: the whole card is clickable, the button inside makes it keyboard-accessible
+        document.querySelectorAll('.service-card').forEach(card => {
             card.addEventListener('click', () => {
-                openModal(`modal-${index + 1}`);
+                const dialog = document.getElementById(card.dataset.modal);
+                if (dialog && !dialog.open) dialog.showModal();
             });
         });
 
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeAllModals();
-            });
-        });
-
-        overlay.addEventListener('click', closeAllModals);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeAllModals();
-        });
-
-        // Re-init Lucide icons for X buttons in modals
-        lucide.createIcons();
-
-        // Impressum & Datenschutz Accordion Logic
-        const impressumBtn = document.getElementById('impressum-btn');
-        const impressumContent = document.getElementById('impressum-content');
-
-        const datenschutzBtn = document.getElementById('datenschutz-btn');
-        const datenschutzContent = document.getElementById('datenschutz-content');
-
-        const accordionCloseBtns = document.querySelectorAll('.accordion-close');
-
-        function toggleAccordion(contentToToggle, otherContent) {
-            if (contentToToggle.classList.contains('active')) {
-                contentToToggle.classList.remove('active');
-            } else {
-                contentToToggle.classList.add('active');
-                if (otherContent && otherContent.classList.contains('active')) {
-                    otherContent.classList.remove('active');
-                }
-
-                setTimeout(() => {
-                    contentToToggle.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 100);
+        const supportsClosedBy = 'closedBy' in HTMLDialogElement.prototype;
+        document.querySelectorAll('.service-modal').forEach(dialog => {
+            dialog.querySelector('.modal-close').addEventListener('click', () => dialog.close());
+            // Light dismiss for browsers without closedby="any" (Safari): click on the backdrop
+            if (!supportsClosedBy) {
+                dialog.addEventListener('click', (e) => {
+                    if (e.target !== dialog) return;
+                    const r = dialog.getBoundingClientRect();
+                    const inside = r.top <= e.clientY && e.clientY <= r.bottom && r.left <= e.clientX && e.clientX <= r.right;
+                    if (!inside) dialog.close();
+                });
             }
+        });
+
+        // Impressum & Datenschutz accordion
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const panels = [
+            { btn: document.getElementById('impressum-btn'), content: document.getElementById('impressum-content') },
+            { btn: document.getElementById('datenschutz-btn'), content: document.getElementById('datenschutz-content') },
+        ];
+
+        function setPanel(panel, open) {
+            panel.content.classList.toggle('active', open);
+            panel.content.inert = !open;
+            panel.btn.setAttribute('aria-expanded', String(open));
         }
 
-        if (impressumBtn && impressumContent) {
-            impressumBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleAccordion(impressumContent, datenschutzContent);
+        panels.forEach(panel => {
+            panel.btn.addEventListener('click', () => {
+                const open = !panel.content.classList.contains('active');
+                panels.forEach(p => setPanel(p, p === panel && open));
+                if (open) {
+                    setTimeout(() => {
+                        panel.content.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+                    }, 100);
+                }
             });
-        }
-
-        if (datenschutzBtn && datenschutzContent) {
-            datenschutzBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleAccordion(datenschutzContent, impressumContent);
-            });
-        }
-
-        // Hook up close buttons
-        accordionCloseBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (impressumContent) impressumContent.classList.remove('active');
-                if (datenschutzContent) datenschutzContent.classList.remove('active');
+            panel.content.querySelector('.accordion-close').addEventListener('click', () => {
+                setPanel(panel, false);
+                panel.btn.focus();
             });
         });
     </script>
-    <!-- Online-Terminbuchung (Cloudflare Worker API, same origin) -->
-    <script src="booking.js?v=2" defer></script>
+    <!-- Icons (self-hosted Lucide subset) and online booking (Cloudflare Worker API, same origin) -->
+    <script src="icons.js?v=1" defer></script>
+    <script src="booking.js?v=3" defer></script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "175595f3d9af44c1b7a6c2ea6a5c6384"}'></script>
     <!-- End Cloudflare Web Analytics -->
